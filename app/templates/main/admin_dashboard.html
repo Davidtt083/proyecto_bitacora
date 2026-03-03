@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <style>
+        :root {
+            --primary: #5a5a5a;
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --light: #f8f9fa;
+            --dark: #343a40;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container-fluid {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-admin {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: 0.3s;
+            border: none;
+            cursor: pointer;
+            display: inline-block;
+        }
+
+        .btn-back {
+            background: var(--dark);
+            color: white;
+        }
+
+        .btn-search {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-clear {
+            background: #6c757d;
+            color: white;
+            padding: 12px;
+        }
+
+        /* --- ESTILO DE TARJETA DE CALENDARIO (Para el Modal) --- */
+        .calendar-card {
+            background: white;
+            border: 1.5px solid #000;
+            border-radius: 12px;
+            width: 85px;
+            height: 85px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .calendar-card .day-num {
+            font-size: 32px;
+            font-weight: 800;
+            line-height: 1;
+            color: #000;
+        }
+
+        .calendar-card .month-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #000;
+            margin-top: 5px;
+            text-align: center;
+            text-transform: capitalize;
+        }
+
+        /* --- STATUS EN CÁPSULA CORREGIDO --- */
+        .badge {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+            white-space: nowrap;
+            border: 1px solid transparent;
+            line-height: 1.4;
+        }
+
+        .badge-proceso {
+            background: #494949;
+            color: #fff;
+            border-color: #494949;
+        }
+
+        .badge-finalizado {
+            background: #737373;
+            color: #fff;
+            border-color: #737373;
+        }
+
+        /* TABLA Y DISEÑO GENERAL */
+        .table-responsive {
+            overflow-x: auto;
+            margin-top: 10px;
+            border: 1px solid #eee;
+            border-radius: 10px;
+            max-height: 70vh;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 2200px;
+        }
+
+        th {
+            background-color: var(--primary);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            font-size: 14px;
+        }
+
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #f0f0f0;
+            vertical-align: middle;
+            font-size: 13px;
+        }
+
+        .view-dates-btn {
+            background: #e7f3ff;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            padding: 5px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        /* MODAL */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            width: 95%;
+            max-width: 550px;
+            text-align: center;
+        }
+
+        /* Contenedor de las tarjetas dentro del modal */
+        #modal-dates-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin: 25px 0;
+        }
+
+        .col-text {
+            width: 300px;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container-fluid">
+        <div class="header-admin">
+            <h2>Panel Maestro de Bitácoras</h2>
+            <a href="{{ url_for('main.index') }}" class="btn btn-back">← Volver al Registro</a>
+        </div>
+
+
+        <!-- FILTROS -->
+        <div class="filters-card"
+            style="background: white; padding: 20px; border-radius: 12px; margin-bottom: 25px; border: 1px solid #e0e6ed;">
+            <form action="{{ url_for('main.admin_dashboard') }}" method="GET">
+                <div style="display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-end;">
+
+                    <div style="flex: 2; min-width: 150px; display: flex; flex-direction: column;">
+                        <label style="font-size: 11px; font-weight: bold; color: #666; margin-bottom: 5px;">Búsqueda
+                            libre</label>
+                        <input type="text" name="q"
+                            style="padding: 10px; border-radius: 8px; border: 1px solid #dcdfe6;"
+                            placeholder="Nombre, proyecto..." value="{{ search_query }}">
+                    </div>
+
+                    <!-- NUEVO FILTRO DE MES -->
+                    <div style="flex: 1; min-width: 120px; display: flex; flex-direction: column;">
+                        <label style="font-size: 11px; font-weight: bold; color: #666; margin-bottom: 5px;">Mes</label>
+                        <select name="mes" onchange="this.form.submit()"
+                            style="padding: 10px; border-radius: 8px; border: 1px solid #dcdfe6;">
+                            <option value="">Todos los meses</option>
+                            {% for val, label in meses_opciones %}
+                            <option value="{{ val }}" {{ 'selected' if val==mes_filter }}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div style="flex: 1; min-width: 120px; display: flex; flex-direction: column;">
+                        <label
+                            style="font-size: 11px; font-weight: bold; color: #666; margin-bottom: 5px;">Empresa</label>
+                        <select name="empresa" onchange="this.form.submit()"
+                            style="padding: 10px; border-radius: 8px; border: 1px solid #dcdfe6;">
+                            <option value="">Todas</option>
+                            {% for e in empresas %}
+                            <option value="{{ e }}" {{ 'selected' if e==empresa_filter }}>{{ e }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div style="flex: 1; min-width: 120px; display: flex; flex-direction: column;">
+                        <label
+                            style="font-size: 11px; font-weight: bold; color: #666; margin-bottom: 5px;">Status</label>
+                        <select name="status" onchange="this.form.submit()"
+                            style="padding: 10px; border-radius: 8px; border: 1px solid #dcdfe6;">
+                            <option value="">Todos</option>
+                            <option value="En proceso" {{ 'selected' if status_filter=='En proceso' }}>En proceso
+                            </option>
+                            <option value="Finalizado" {{ 'selected' if status_filter=='Finalizado' }}>Finalizado
+                            </option>
+                        </select>
+                    </div>
+
+                    <div style="display: flex; gap: 10px; margin-top: 10px;">
+                        <button type="submit" class="btn btn-search">Aplicar</button>
+
+                        <!-- Mostramos Limpiar solo si hay algún filtro activo -->
+                        {% if search_query or empresa_filter or status_filter or mes_filter %}
+                        <a href="{{ url_for('main.admin_dashboard') }}" class="btn btn-clear">Limpiar</a>
+                        {% endif %}
+
+                        <!-- Botón PDF actualizado para enviar también el mes_filter -->
+                        <a href="{{ url_for('main.export_pdf', q=search_query, empresa=empresa_filter, status=status_filter, mes=mes_filter) }}"
+                            class="btn" style="background: #dc3545; color: white;">
+                            📄 Descargar PDF
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fecha Registro</th>
+                        <th>Nombre</th>
+                        <th>Estado Usuario</th>
+                        <th>Empresa</th>
+                        <th>Puesto</th>
+                        <th style="text-align: center;">Días Laborados</th>
+                        <th>Jefe Inmediato</th>
+                        <th>Cargo Jefe</th>
+                        <th>Proyecto</th>
+                        <th style="text-align: center;">Status</th>
+                        <th class="col-text">Actividades</th>
+                        <th>Herramientas</th>
+                        <th>Entregable</th>
+                        <th class="col-text">Medio</th>
+                        <th class="col-text">Incidencias</th>
+                        <th style="text-align: center; min-width: 150px;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for reporte in reportes %}
+                    <tr>
+                        <!-- REGRESA A TEXTO NORMAL -->
+                        <td>{{ reporte.timestamp.strftime('%d/%m/%Y %H:%M') }}</td>
+                        <td> <strong>{{ reporte.nombre_completo }}</strong><br>
+                            <span style="font-size: 11px; color: #666;">📞 {{ reporte.autor.telefono or 'N/A' }}</span>
+                        </td>
+                        <td style="text-align: center;">
+                            {% if reporte.autor.activo %}
+                            <span style="color: #28a745; font-weight: bold;">● Vigente</span>
+                            {% else %}
+                            <span style="color: #dc3545; font-weight: bold;">● No Vigente</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ reporte.empresa }}</td>
+                        <td>{{ reporte.puesto }}</td>
+
+                        <td style="text-align: center;">
+                            {% if reporte.periodo_semanal %}
+                            <button class="view-dates-btn"
+                                onclick="openDatesModal('{{ reporte.periodo_semanal }}', '{{ reporte.nombre_completo }}')">
+                                {{ reporte.periodo_semanal.split(' | ')|length }} días
+                            </button>
+                            {% else %} - {% endif %}
+                        </td>
+
+                        <td>{{ reporte.nombre_jefe_inmediato }}</td>
+                        <td>{{ reporte.cargo_jefe_inmediato }}</td>
+                        <td>{{ reporte.proyecto_actual }}</td>
+
+                        <!-- STATUS EN CÁPSULA CORREGIDO -->
+                        <td style="text-align: center;">
+                            <span
+                                class="badge {{ 'badge-finalizado' if reporte.status == 'Finalizado' else 'badge-proceso' }}">
+                                {{ reporte.status }}
+                            </span>
+                        </td>
+
+                        <td class="col-text">{{ reporte.actividades }}</td>
+                        <td>{{ reporte.herramientas_utilizadas or '-' }}</td>
+                        <td>{{ reporte.entregable_generado or '-' }}</td>
+                        <td class="col-text">{{ reporte.medio_entregable or '-' }}</td>
+                        <td class="col-text" style="color: var(--danger);">{{ reporte.incidencias or 'Ninguna' }}</td>
+                        <td style="text-align: center;">
+                            <div style="display: flex; flex-direction: column; gap: 6px;">
+                                <!-- Editar Usuario -->
+                                <a href="{{ url_for('main.edit_user', user_id=reporte.autor.id) }}" class="btn"
+                                    style="background: #040404; color: white; padding: 6px; font-size: 11px;">
+                                    Editar Usuario
+                                </a>
+
+                                <!-- Eliminar Usuario -->
+                                <form action="{{ url_for('main.delete_user', user_id=reporte.autor.id) }}" method="POST"
+                                    style="margin: 0;"
+                                    onsubmit="return confirm('ATENCIÓN: ¿Estás seguro de eliminar a {{ reporte.autor.nombre }}? Esto borrará su cuenta y TODOS sus reportes.');">
+                                    <button type="submit" class="btn"
+                                        style="background: #dc3545; color: white; padding: 6px; font-size: 11px; width: 100%;">
+                                        Borrar Usuario
+                                    </button>
+                                </form>
+
+                                <hr style="width: 100%; border: 0.5px solid #eee; margin: 2px 0;">
+
+                                <!-- Eliminar solo este reporte -->
+                                <form action="{{ url_for('main.delete_report', report_id=reporte.id) }}" method="POST"
+                                    style="margin: 0;" onsubmit="return confirm('¿Borrar solo este reporte?');">
+                                    <button type="submit" class="btn"
+                                        style="background: #6c757d; color: white; padding: 6px; font-size: 11px; width: 100%;">
+                                        Borrar Fila
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- MODAL -->
+    <div id="datesModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 id="modal-user-name" style="margin-top:0; font-size: 1.4rem;">Días Laborados</h3>
+            <div id="modal-dates-container">
+                <!-- Aquí se generarán las tarjetas de calendario -->
+            </div>
+            <button class="btn btn-back" style="width: 100%; margin-top: 10px;" onclick="closeModal()">Cerrar
+                Ventana</button>
+        </div>
+    </div>
+
+    <script>
+        const nombresMeses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+
+        function openDatesModal(fechasStr, nombre) {
+            const modal = document.getElementById('datesModal');
+            const container = document.getElementById('modal-dates-container');
+            document.getElementById('modal-user-name').innerText = "Días de " + nombre;
+
+            container.innerHTML = '';
+
+            // Procesamos cada fecha de la cadena "16/02/2026 | 17/02/2026"
+            fechasStr.split(' | ').forEach(f => {
+                if (f.trim()) {
+                    const partes = f.split('/'); // [día, mes, año]
+                    const dia = partes[0];
+                    const mesIndex = parseInt(partes[1]) - 1;
+                    const año = partes[2];
+
+                    // Creamos la estructura de la tarjeta de calendario
+                    const card = document.createElement('div');
+                    card.className = 'calendar-card';
+                    card.innerHTML = `
+                        <span class="day-num">${dia}</span>
+                        <span class="month-label">${nombresMeses[mesIndex]} ${año}</span>
+                    `;
+                    container.appendChild(card);
+                }
+            });
+
+            modal.style.display = 'flex';
+        }
+
+        function closeModal() { document.getElementById('datesModal').style.display = 'none'; }
+        window.onclick = function (e) { if (e.target == document.getElementById('datesModal')) closeModal(); }
+    </script>
+
+</body>
+
+</html>

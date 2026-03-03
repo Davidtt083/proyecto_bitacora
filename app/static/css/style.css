@@ -1,0 +1,91 @@
+/* Estilos base */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f4f7f6;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
+}
+
+.container {
+    background: #ffffff;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    width: 100%;
+    max-width: 450px; /* Ancho máximo en escritorio */
+}
+
+h1 {
+    color: #333;
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+/* Campos del formulario */
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: #555;
+}
+
+/* Inputs responsivos */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+select {
+    width: 100%; /* Ocupa todo el ancho del contenedor */
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box; /* Importante para que el padding no rompa el ancho */
+    font-size: 16px; /* Evita zoom automático en iPhone */
+}
+
+/* Botón de envío */
+input[type="submit"] {
+    width: 100%;
+    background-color: #007bff;
+    color: white;
+    padding: 14px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    transition: background 0.3s;
+    margin-top: 10px;
+}
+
+input[type="submit"]:hover {
+    background-color: #0056b3;
+}
+
+/* Enlaces inferiores */
+.footer-text {
+    text-align: center;
+    margin-top: 15px;
+    font-size: 0.9rem;
+}
+
+hr {
+    border: 0;
+    border-top: 1px solid #eee;
+    margin: 20px 0;
+}
+
+/* Adaptación para móviles */
+@media (max-width: 480px) {
+    .container {
+        padding: 1.5rem;
+        box-shadow: none; /* En móvil se ve mejor más plano */
+    }
+}

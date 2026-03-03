@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Reporte de Bitácoras</title>
+    <style>
+        /* Configuración de la página en Horizontal (Landscape) */
+        @page {
+            size: A4 landscape;
+            margin: 1cm;
+            @frame footer {
+                -pdf-frame-content: footerContent;
+                bottom: 1cm;
+                margin-left: 1cm;
+                margin-right: 1cm;
+                height: 1cm;
+            }
+        }
+        
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 10px; /* Letra pequeña para que quepan las columnas */
+            color: #333;
+        }
+
+        h2 {
+            text-align: center;
+            color: #5a5a5a;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background-color: #5a5a5a;
+            color: white;
+            font-weight: bold;
+            text-align: left;
+            padding: 6px;
+            border: 0.5px solid #000;
+        }
+
+        td {
+            padding: 6px;
+            border: 0.5px solid #000;
+            vertical-align: top;
+            /* Permite que el texto largo se acomode hacia abajo */
+            word-wrap: break-word; 
+        }
+
+        .text-center { text-align: center; }
+        .text-bold { font-weight: bold; }
+        .status-proceso { color: #d39e00; font-weight: bold; }
+        .status-finalizado { color: #28a745; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <h2>Reporte de Bitácoras Generado</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 6%;">Fecha</th>
+                <th style="width: 10%;">Empleado</th>
+                <th style="width: 10%;">Empresa</th>
+                <th style="width: 12%;">Proyecto</th>
+                <th style="width: 30%;">Actividades</th>
+                <th style="width: 12%;">Entregable</th>
+                <th style="width: 8%;">Status</th>
+                <th style="width: 12%;">Incidencias</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in reportes %}
+            <tr>
+                <td>{{ r.timestamp.strftime('%d/%m/%Y') }}</td>
+                <td class="text-bold">{{ r.nombre_completo }}<br><span style="font-weight: normal; color: #666;">{{ r.puesto }}</span></td>
+                <td>{{ r.empresa }}</td>
+                <td>{{ r.proyecto_actual }}</td>
+                <!-- Reemplazamos saltos de línea con <br> para el HTML del PDF -->
+                <td>{{ r.actividades | replace('\n', '<br>') | safe }}</td>
+                <td>{{ r.entregable_generado or 'N/A' }}</td>
+                <td class="text-center">
+                    {% if r.status == 'Finalizado' %}
+                        <span class="status-finalizado">Finalizado</span>
+                    {% else %}
+                        <span class="status-proceso">En Proceso</span>
+                    {% endif %}
+                </td>
+                <td style="color: #dc3545;">{{ r.incidencias or 'Ninguna' }}</td>
+            </tr>
+            {% endfor %}
+            {% if not reportes %}
+            <tr>
+                <td colspan="8" class="text-center" style="padding: 20px;">No se encontraron reportes con estos filtros.</td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+
+    <!-- Paginación en el pie de página -->
+    <div id="footerContent" style="text-align: right; font-size: 9px; color: #666;">
+        Página <pdf:pagenumber> de <pdf:pagecount>
+    </div>
+
+</body>
+</html>

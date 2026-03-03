@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+
+    <!-- Estilos de Flatpickr (Calendario) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/material_blue.css">
+
+    <style>
+        :root {
+            --primary: #007bff;
+            --success: #28a745;
+            --danger: #dc3545;
+            --bg: #f4f7f9;
+            --text: #333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 10px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 10px auto;
+            padding: 15px 25px;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        /* HEADER RESPONSIVO */
+        .header {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+            gap: 10px;
+        }
+
+        .header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 14px;
+            display: inline-block;
+            border: none;
+            cursor: pointer;
+        }
+
+        .logout-btn {
+            background: var(--danger);
+            color: white;
+        }
+
+        .admin-btn {
+            background: #5a5a5a;
+            color: white;
+        }
+
+        /* FORMULARIO RESPONSIVO CON GRID */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            /* Base: 2 columnas */
+            gap: 12px 20px;
+            /* Menos espacio vertical */
+        }
+
+        .full-width {
+            grid-column: span 2;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        input,
+        textarea,
+        .flatpickr-input {
+            padding: 12px;
+            border: 1.5px solid #ddd;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: border-color 0.3s;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        input:focus,
+        textarea:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+
+        textarea {
+            height: 120px;
+            resize: vertical;
+        }
+
+        .submit-btn {
+            background-color: #6c757d;
+            color: white;
+            padding: 15px;
+            font-size: 16px;
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        .flash-messages {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        @media (min-width: 1024px) {
+            .form-grid {
+                grid-template-columns: repeat(3, 1fr);
+                /* 3 columnas en lugar de 2 */
+            }
+
+            .full-width {
+                grid-column: span 3;
+                /* Que ocupe las 3 columnas */
+            }
+
+            /* Si tienes campos que quieres que ocupen 2 columnas pero no 3 */
+            .two-thirds {
+                grid-column: span 2;
+            }
+        }
+
+        /* Reducir altura de campos para ganar espacio vertical */
+        input,
+        textarea,
+        .flatpickr-input {
+            padding: 8px 12px;
+            /* Reducido de 12px */
+        }
+
+        textarea {
+            height: 80px;
+            /* Reducido de 120px */
+        }
+
+        /* MEDIA QUERIES PARA MÓVILES */
+        @media (max-width: 600px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            /* Una columna en móvil */
+            .full-width {
+                grid-column: span 1;
+            }
+
+            .header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .btn-group {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        .hidden-field {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .show-field {
+            display: block !important;
+            opacity: 1;
+        }
+
+        .input-icon-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-icon-wrapper input {
+            padding-left: 45px;
+            /* Espacio para el icono */
+            cursor: pointer;
+            background-color: #fff;
+            font-weight: 500;
+            color: var(--primary);
+        }
+
+        .calendar-icon {
+            position: absolute;
+            left: 15px;
+            width: 20px;
+            height: 20px;
+            fill: var(--primary);
+            pointer-events: none;
+            /* El clic pasa al input */
+        }
+
+        /* Cambiar color cuando está seleccionado */
+        .input-icon-wrapper input:focus {
+            background-color: #f0f7ff;
+        }
+
+        #datepicker {
+            color: transparent !important;
+            /* Oculta el texto de las fechas */
+            text-shadow: 0 0 0 transparent;
+            /* Asegura que no haya sombras del texto */
+            cursor: pointer;
+        }
+
+        /* Mantenemos el placeholder visible para que el usuario sepa qué hacer */
+        #datepicker::placeholder {
+            color: #666;
+        }
+
+        /* Opcional: Si quieres que el campo cambie de color cuando ya hay algo seleccionado */
+        #datepicker:not(:placeholder-shown) {
+            background-color: #eef9ee;
+            /* Un tono verde muy tenue indicando que ya hay selección */
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h2>Nueva Bitácora</h2>
+            <div class="btn-group">
+                {% if current_user.rol == 'admin' %}
+                <a href="{{ url_for('main.admin_dashboard') }}" class="btn admin-btn">Panel Admin</a>
+                <a href="{{ url_for('auth.register') }}" class="btn admin-btn">Registrar Usuario</a>
+                {% endif %}
+                <a href="{{ url_for('auth.logout') }}" class="btn logout-btn">Cerrar Sesión</a>
+            </div>
+        </div>
+
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        {% for message in messages %}
+        <div class="flash-messages">{{ message }}</div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <form method="POST">
+            {{ form.hidden_tag() }}
+
+            <div class="form-grid">
+                <div class="form-group">
+                    {{ form.nombre_completo.label }}
+                    {{ form.nombre_completo() }}
+                </div>
+                <div class="form-group">
+                    {{ form.empresa.label }}
+                    {{ form.empresa() }}
+                </div>
+
+                <div class="form-group">
+                    {{ form.puesto.label }}
+                    {{ form.puesto() }}
+                </div>
+
+                <div class="form-group">
+                    <label for="periodo_semanal">Días Laborados de esta Semana</label>
+                    <div class="input-icon-wrapper">
+                        <!-- Icono SVG de Calendario -->
+                        <svg class="calendar-icon" viewBox="0 0 24 24">
+                            <path
+                                d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM9 14H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2zm-8 4H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2z">
+                            </path>
+                        </svg>
+                        {{ form.periodo_semanal(id="datepicker", placeholder="Clic para marcar días...", readonly=True)
+                        }}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    {{ form.nombre_jefe_inmediato.label }}
+                    {{ form.nombre_jefe_inmediato() }}
+                </div>
+                <div class="form-group">
+                    {{ form.cargo_jefe_inmediato.label }}
+                    {{ form.cargo_jefe_inmediato() }}
+                </div>
+
+                <div class="form-group full-width">
+                    {{ form.proyecto_actual.label }}
+                    {{ form.proyecto_actual() }}
+                </div>
+
+                <div class="form-group full-width">
+                    {{ form.actividades.label }}
+                    {{ form.actividades() }}
+                </div>
+
+                <div class="form-group">
+                    {{ form.herramientas_utilizadas.label }}
+                    {{ form.herramientas_utilizadas() }}
+                </div>
+                <div class="form-group">
+                    {{ form.status.label }}
+                    {{ form.status() }}
+                </div>
+
+                <div class="form-group">
+                    {{ form.entregable_generado.label }}
+                    {{ form.entregable_generado() }}
+                </div>
+
+                <!-- ESTE CONTENEDOR SE OCULTARÁ/MOSTRARÁ -->
+                <div class="form-group full-width hidden-field" id="medio-entregable-container">
+                    {{ form.medio_entregable.label }}
+                    {{ form.medio_entregable(placeholder="Especifique dónde se encuentra el entregable...") }}
+                </div>
+
+                <div class="form-group full-width">
+                    {{ form.incidencias.label }}
+                    {{ form.incidencias() }}
+                </div>
+            </div>
+
+            {{ form.submit(class="btn submit-btn") }}
+        </form>
+    </div>
+
+    <!-- Scripts de Flatpickr -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/es.js"></script> <!-- Idioma español -->
+
+    <script>
+        // Inicialización del calendario
+        flatpickr("#datepicker", {
+            mode: "multiple",        // Permite marcar varios días
+            dateFormat: "d/m/Y",     // Formato de fecha
+            locale: "es",            // Calendario en español
+            conjunction: " | ",      // Separador visual entre fechas
+            allowInput: true
+        });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const statusSelect = document.getElementById('status-select');
+            const medioContainer = document.getElementById('medio-entregable-container');
+
+            function toggleMedioField() {
+                if (statusSelect.value === 'Finalizado') {
+                    medioContainer.classList.add('show-field');
+                } else {
+                    medioContainer.classList.remove('show-field');
+                }
+            }
+
+            // Ejecutar al cargar (por si acaso hay errores de validación)
+            toggleMedioField();
+
+            // Escuchar cambios en el selector
+            statusSelect.addEventListener('change', toggleMedioField);
+        });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // 1. CÁLCULO DEL RANGO (Lunes a Viernes de esta semana)
+            const hoy = new Date();
+            const diaSemana = hoy.getDay(); // 0=Dom, 1=Lun...
+
+            // Calcular el Lunes
+            const lunes = new Date(hoy);
+            const diffLunes = diaSemana === 0 ? -6 : 1 - diaSemana;
+            lunes.setDate(hoy.getDate() + diffLunes);
+            lunes.setHours(0, 0, 0, 0);
+
+            // Calcular el Viernes
+            const viernes = new Date(lunes);
+            viernes.setDate(lunes.getDate() + 4);
+            viernes.setHours(23, 59, 59, 999);
+
+            // 2. CREAR ARREGLO DE DÍAS POR DEFECTO (Lun, Mar, Mie, Jue, Vie)
+            const diasPorDefecto = [];
+            for (let i = 0; i < 5; i++) {
+                let d = new Date(lunes);
+                d.setDate(lunes.getDate() + i);
+                diasPorDefecto.push(d);
+            }
+
+            // 3. INICIALIZAR FLATPICKR
+            flatpickr("#datepicker", {
+                mode: "multiple",
+                dateFormat: "d/m/Y",
+                locale: "es",
+                conjunction: " | ",
+                minDate: lunes,    // Restringir a esta semana
+                maxDate: viernes,
+                defaultDate: diasPorDefecto, // PRE-SELECCIONAR LUNES A VIERNES
+                disableMobile: "true",
+
+                // Cada vez que cambie, podemos actualizar el placeholder para dar feedback
+                onChange: function (selectedDates, dateStr, instance) {
+                    if (selectedDates.length === 0) {
+                        instance.input.placeholder = "Ningún día seleccionado";
+                    } else {
+                        instance.input.placeholder = selectedDates.length + " días seleccionados";
+                    }
+                },
+
+                // Al cargar por primera vez
+                onReady: function (selectedDates, dateStr, instance) {
+                    instance.input.placeholder = "5 días seleccionados (L-V)";
+                }
+            });
+        });
+    </script>
+
+</body>
+
+</html>

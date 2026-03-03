@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Registro - Sistema de Bitácora</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        /* Optimizaciones para evitar scroll en pantallas anchas */
+        body {
+            background-color: #f4f7f9;
+            margin: 0;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            /* Centra el formulario verticalmente */
+        }
+
+        .container {
+            max-width: 1100px;
+            /* Más ancho para que quepan 3 columnas */
+            width: 95%;
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 1.8rem;
+        }
+
+        /* GRID SYSTEM */
+        .registration-form {
+            display: grid;
+            grid-template-columns: 1fr;
+            /* 1 columna en móvil */
+            gap: 15px;
+            /* Espacio entre campos */
+        }
+
+        /* Media Query para Tablet/Laptop (2 columnas) */
+        @media (min-width: 768px) {
+            .registration-form {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Media Query para Monitores Anchos (3 columnas) */
+        @media (min-width: 1024px) {
+            .registration-form {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .full-width-desktop {
+                grid-column: span 3;
+            }
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 10px;
+            border: 1.5px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .submit-container {
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        input[type="submit"] {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 40px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+            width: 100%;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+
+        .footer-text {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: 0.3s;
+            border: none;
+            cursor: pointer;
+            display: inline-block;
+        }
+
+        .btn-back {
+            background: #6c757d;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <a href="{{ url_for('main.index') }}" class="btn btn-back">← Volver al Registro</a>
+        <h1>Registro de Empleado</h1>
+
+
+        <form method="POST">
+            {{ form.hidden_tag() }}
+
+            <div class="registration-form">
+                <!-- Fila 1 -->
+                <div class="form-group">{{ form.nombre.label }} {{ form.nombre() }}</div>
+                <div class="form-group">{{ form.email.label }} {{ form.email() }}</div>
+                <div class="form-group">{{ form.telefono.label }} {{ form.telefono() }}</div>
+                
+
+                <!-- Fila 2 -->
+                 <div class="form-group">{{ form.puesto.label }} {{ form.puesto() }}</div>
+                <div class="form-group">{{ form.jefe_directo.label }} {{ form.jefe_directo() }}</div>
+                <div class="form-group">{{ form.cargo_jefe.label }} {{ form.cargo_jefe() }}</div>
+                <div class="form-group">{{ form.proyecto_actual.label }} {{ form.proyecto_actual() }}</div>
+
+                <!-- Fila 3 -->
+                <div class="form-group">{{ form.password.label }} {{ form.password() }}</div>
+                <div class="form-group">{{ form.password_confirm.label }} {{ form.password_confirm() }}</div>
+                <div class="form-group">{{ form.empresa.label }} {{ form.empresa() }}</div>
+
+                <!-- Fila 4 (Ultimo campo y botón) -->
+                <div class="form-group">{{ form.empresa_origen.label }} {{ form.empresa_origen() }}</div>
+
+                <div class="submit-container full-width-desktop">
+                    {{ form.submit(class="submit-btn") }}
+                </div>
+            </div>
+        </form>
+
+       <!--  <p class="footer-text">¿Ya tienes cuenta? <a href="{{ url_for('auth.login') }}">Inicia sesión</a></p>-->
+    </div>
+</body>
+
+</html>

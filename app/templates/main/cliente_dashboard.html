@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Cliente - {{ current_user.empresa }}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid #5a5a5a;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+        }
+
+        h1 {
+            color: #333;
+            margin: 0;
+        }
+
+        .btn-logout {
+            background: #dc3545;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        th {
+            background: #5a5a5a;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            vertical-align: top;
+        }
+
+        tr:hover {
+            background: #f1f1f1;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+            white-space: nowrap;
+            border: 1px solid transparent;
+            line-height: 1.4;
+        }
+
+        .status-proceso {
+            background: #494949;
+            color: #fff;
+            border-color: #494949;
+        }
+
+        .status-finalizado {
+            background: #737373;
+            color: #fff;
+            border-color: #737373;
+        }
+
+        .scrollable-text {
+            max-height: 80px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            width: 200px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>Reportes: {{ current_user.empresa }}</h1>
+                <p>Bienvenido, {{ current_user.nombre }}</p>
+            </div>
+            <a href="{{ url_for('auth.logout') }}" class="btn-logout">Cerrar Sesión</a>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Registro</th>
+                    <th>Empleado</th>
+                    <th>Puesto</th>
+                    <th>Periodo (Lun-Vie)</th>
+                    <th>Proyecto</th>
+                    <th>Status</th>
+                    <th>Actividades</th>
+                    <th>Herramientas</th>
+                    <th>Entregable / Medio</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in reportes %}
+                <tr>
+                    <td>{{ r.timestamp.strftime('%d/%m/%Y') }}</td>
+                    <td><strong>{{ r.nombre_completo }}</strong></td>
+                    <td>{{ r.puesto }}</td>
+                    <td style="color: #0056b3; font-weight: bold;">{{ r.periodo_visual }}</td>
+                    <td>{{ r.proyecto_actual }}</td>
+                    <td>
+                        <span class="badge {{ 'status-finalizado' if r.status == 'Finalizado' else 'status-proceso' }}">
+                            {{ r.status }}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="scrollable-text">{{ r.actividades }}</div>
+                    </td>
+                    <td>{{ r.herramientas_utilizadas or 'N/A' }}</td>
+                    <td>
+                        <strong>{{ r.entregable_generado or 'Sin entregable' }}</strong><br>
+                        <small style="color: #666;">{{ r.medio_entregable or '' }}</small>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% if not reportes %}
+        <p style="text-align: center; padding: 40px; color: #888;">No hay reportes registrados para su empresa por el
+            momento.</p>
+        {% endif %}
+    </div>
+
+</body>
+
+</html>

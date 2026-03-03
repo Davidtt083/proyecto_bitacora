@@ -1,0 +1,1 @@
+CREATE DATABASE bitacora_db;

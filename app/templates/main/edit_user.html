@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f4f7f9;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+        }
+        h2 { text-align: center; color: #333; margin-bottom: 20px; }
+        .form-group { display: flex; flex-direction: column; margin-bottom: 15px; }
+        label { font-weight: 600; margin-bottom: 5px; font-size: 14px; color: #555; }
+        input, select { padding: 10px; border: 1.5px solid #ddd; border-radius: 8px; font-size: 15px; }
+        .btn-submit { background: #28a745; color: white; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px;}
+        .btn-back { display: block; text-align: center; margin-top: 15px; color: #5a5a5a; text-decoration: none; font-weight: bold; }
+        .alert { padding: 10px; border-radius: 8px; margin-bottom: 15px; background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Editar: {{ user.nombre }}</h2>
+        
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            
+            <div class="form-group">
+                {{ form.nombre.label }} {{ form.nombre() }}
+            </div>
+            
+            <div class="form-group">
+                {{ form.email.label }} {{ form.email() }}
+            </div>
+
+            <div class="form-group">
+                {{ form.telefono.label }} {{ form.telefono() }}
+            </div>
+            
+            <div class="form-group">
+                {{ form.empresa.label }} {{ form.empresa() }}
+            </div>
+            
+            <div class="form-group">
+                {{ form.puesto.label }} {{ form.puesto() }}
+            </div>
+            
+            <div class="form-group">
+                {{ form.status.label }} {{ form.status() }}
+            </div>
+
+            {{ form.submit(class="btn-submit") }}
+        </form>
+
+        <a href="{{ url_for('main.admin_dashboard') }}" class="btn-back">← Volver al Dashboard</a>
+    </div>
+
+</body>
+</html>
