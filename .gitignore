@@ -1,2 +1,12 @@
+# Ignorar bases de datos SQLite
+*.db
+app.db
+instance/
+
+# Ignorar archivos de entorno y secretos
 .env
+
+# Ignorar carpetas de entornos virtuales y cachés de Python
 venv/
+__pycache__/
+*.pyc

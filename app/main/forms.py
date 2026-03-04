@@ -43,6 +43,10 @@ class EditUserAdminForm(FlaskForm):
         ('Empresa D', 'Empresa D'),
         ('Independiente', 'Trabajador Independiente')
     ], validators=[DataRequired()])
+    empresa_origen = SelectField('Empresa Origen', choices=[
+        ('Krolls', 'Krolls'),
+        ('PROGREDI', 'PROGREDI'),
+    ], validators=[DataRequired()])
     puesto = StringField('Puesto / Cargo', validators=[DataRequired()])
     
     status = SelectField('Estado del Usuario', choices=[

@@ -1,16 +1,16 @@
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+# Ubicación absoluta de la carpeta de tu proyecto
+basedir = os.path.abspath(os.path.dirname(__file__))
+load_dotenv(os.path.join(basedir, '.env'))
 
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'una-clave-secreta-por-defecto'
     
-    # Configuración de MySQL usando PyMySQL
-    user = os.environ.get('DB_USER')
-    password = os.environ.get('DB_PASSWORD')
-    host = os.environ.get('DB_HOST')
-    database = os.environ.get('DB_NAME')
-    
-    SQLALCHEMY_DATABASE_URI = f'mysql+pymysql://{user}:{password}@{host}/{database}'
+    # --- CONFIGURACIÓN PARA SQLITE (Súper simple) ---
+    # Esto creará un archivo llamado 'app.db' mágicamente en tu carpeta
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
+        'sqlite:///' + os.path.join(basedir, 'app.db')
+        
     SQLALCHEMY_TRACK_MODIFICATIONS = False

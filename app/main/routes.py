@@ -194,6 +194,7 @@ def edit_user(user_id):
         user.email = form.email.data
         user.telefono = form.telefono.data 
         user.empresa = form.empresa.data
+        user.empresa_origen = form.empresa_origen.data
         user.puesto = form.puesto.data
         user.activo = (form.status.data == '1')
         
@@ -216,6 +217,7 @@ def edit_user(user_id):
         form.email.data = user.email
         form.telefono.data = user.telefono
         form.empresa.data = user.empresa
+        form.empresa_origen.data = user.empresa_origen
         form.puesto.data = user.puesto
         form.status.data = '1' if user.activo else '0'
 
@@ -263,7 +265,14 @@ def export_pdf():
     search_query = request.args.get('q', '')
     empresa_filter = request.args.get('empresa', '')
     status_filter = request.args.get('status', '')
-    mes_filter = request.args.get('mes', '') # Capturamos el mes
+    mes_filter = request.args.get('mes', '')
+    responsable = request.args.get('responsable', '___________________________')
+
+    # --- NUEVA VALIDACIÓN DE SEGURIDAD ---
+    # Si alguien intenta forzar la URL sin empresa, lo regresamos
+    if not empresa_filter:
+        flash('Debe seleccionar una empresa cliente específica para generar el informe.', 'warning')
+        return redirect(url_for('main.admin_dashboard'))
 
     query = Bitacora.query
 
@@ -275,12 +284,12 @@ def export_pdf():
                 Bitacora.actividades.ilike(f'%{search_query}%')
             )
         )
-    if empresa_filter:
-        query = query.filter(Bitacora.empresa == empresa_filter)
+    # Como ya validamos que empresa_filter existe, este filtro siempre se aplicará
+    query = query.filter(Bitacora.empresa == empresa_filter)
+    
     if status_filter:
         query = query.filter(Bitacora.status == status_filter)
         
-    # Aplicar el filtro de mes también al PDF
     if mes_filter:
         año, mes = map(int, mes_filter.split('-'))
         ultimo_dia = calendar.monthrange(año, mes)[1]
@@ -290,8 +299,65 @@ def export_pdf():
 
     reportes = query.order_by(Bitacora.timestamp.desc()).all()
 
-    html = render_template('main/pdf_report.html', reportes=reportes)
+    # --- LÓGICA DE AGRUPACIÓN ---
+    consultores_agrupados = {}
+    empresa_origen_general = "" # Iniciamos totalmente en blanco
+    
+    for r in reportes:
+        usuario_id = r.autor.id
+        
+        # 1. Extraemos EXACTAMENTE la empresa origen (Krolls o PROGREDI) del usuario
+        if not empresa_origen_general and r.autor.empresa_origen:
+            empresa_origen_general = r.autor.empresa_origen
 
+        # 2. Agrupamos los datos del consultor
+        if usuario_id not in consultores_agrupados:
+            consultores_agrupados[usuario_id] = {
+                'nombre': r.nombre_completo,
+                'puesto': r.puesto,
+                'jefe': r.nombre_jefe_inmediato,
+                'num_bitacoras': 0,
+                'dias_asignados': 0
+            }
+                
+        # Sumamos 1 bitácora
+        consultores_agrupados[usuario_id]['num_bitacoras'] += 1
+        
+        # Sumamos los días laborados
+        if r.periodo_semanal:
+            dias = len([d for d in r.periodo_semanal.split('|') if d.strip()])
+            consultores_agrupados[usuario_id]['dias_asignados'] += dias
+
+    # Si el reporte lo hizo un usuario muy antiguo o el admin que no tenía este dato,
+    # forzamos a que diga "Krolls International" para no romper el formato formal.
+    if not empresa_origen_general:
+        empresa_origen_general = "Krolls"
+
+    lista_consultores = list(consultores_agrupados.values())
+    total_consultores = len(lista_consultores)
+
+    # --- GENERACIÓN DE TEXTOS DINÁMICOS ---
+    meses_es = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+    hoy = datetime.now()
+    fecha_hoy = f"{hoy.day} de {meses_es[hoy.month-1]} de {hoy.year}"
+    
+    if mes_filter:
+        año, mes = mes_filter.split('-')
+        informe_mes = f"{meses_es[int(mes)-1].upper()} {año}"
+    else:
+        informe_mes = f"PERIODO GENERAL"
+
+    # 2. Renderizar el HTML
+    html = render_template('main/pdf_report.html', 
+                           lista_consultores=lista_consultores,
+                           total_consultores=total_consultores,
+                           fecha_hoy=fecha_hoy,
+                           informe_mes=informe_mes,
+                           empresa_cliente=empresa_filter, # Usamos directamente el filtro obligatorio
+                           empresa_origen=empresa_origen_general, # Extraído del perfil del usuario
+                           responsable=responsable)
+
+    # 3. Convertir a PDF
     result = BytesIO()
     pdf = pisa.CreatePDF(BytesIO(html.encode('utf-8')), dest=result, encoding='utf-8')
 
@@ -301,6 +367,6 @@ def export_pdf():
 
     response = make_response(result.getvalue())
     response.headers['Content-Type'] = 'application/pdf'
-    response.headers['Content-Disposition'] = 'attachment; filename=reportes_bitacora.pdf'
+    response.headers['Content-Disposition'] = 'attachment; filename=informe_mensual.pdf'
     
     return response

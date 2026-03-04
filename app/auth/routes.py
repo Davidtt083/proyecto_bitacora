@@ -17,7 +17,7 @@ def register():
             telefono=form.telefono.data,
             empresa=form.empresa.data,
             jefe_directo=form.jefe_directo.data,
-            # GUARDAMOS LOS NUEVOS CAMPOS
+            empresa_origen=form.empresa_origen.data,
             puesto=form.puesto.data,
             cargo_jefe=form.cargo_jefe.data,
             proyecto_actual=form.proyecto_actual.data,

@@ -272,10 +272,10 @@
                         {% endif %}
 
                         <!-- Botón PDF actualizado para enviar también el mes_filter -->
-                        <a href="{{ url_for('main.export_pdf', q=search_query, empresa=empresa_filter, status=status_filter, mes=mes_filter) }}"
-                            class="btn" style="background: #dc3545; color: white;">
-                            📄 Descargar PDF
-                        </a>
+                        <button type="button" class="btn" style="background: #dc3545; color: white;"
+                            onclick="openPdfModal()">
+                            📄 Generar Informe PDF
+                        </button>
                     </div>
                 </div>
             </form>
@@ -430,6 +430,65 @@
 
         function closeModal() { document.getElementById('datesModal').style.display = 'none'; }
         window.onclick = function (e) { if (e.target == document.getElementById('datesModal')) closeModal(); }
+    </script>
+
+    <!-- MODAL PARA PDF -->
+    <div id="pdfModal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 400px;">
+            <h3 style="margin-top: 0; color: #333;">Generar Informe PDF</h3>
+            <p style="font-size: 13px; color: #555; text-align: left;">Ingrese el nombre del responsable de la cuenta (Ej: Hilda Hernández, Jorge Pichardo, Jorge Medellin):</p>
+            
+            <input type="text" id="responsableInput" placeholder="Nombre completo..." 
+                   style="width: 100%; padding: 10px; margin-bottom: 20px; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box;">
+            
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-search" style="flex: 1;" onclick="descargarPdf()">Descargar PDF</button>
+                <button class="btn btn-back" style="flex: 1;" onclick="closePdfModal()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+       function openPdfModal() {
+            // 1. Buscamos qué empresa está seleccionada en el filtro
+            const empresaSelect = document.querySelector('select[name="empresa"]');
+            const empresaSeleccionada = empresaSelect.value;
+
+            // 2. Si está en blanco ("Todas"), bloqueamos y avisamos
+            if (!empresaSeleccionada) {
+                alert("⚠️ ATENCIÓN: Para generar este informe formal, primero debe seleccionar una Empresa Cliente específica en los filtros de arriba.");
+                return; // Detenemos el código, el modal no se abre
+            }
+
+            // 3. Si todo está bien, abrimos la ventana
+            document.getElementById('pdfModal').style.display = 'flex';
+            document.getElementById('responsableInput').focus();
+        }
+
+        function closePdfModal() {
+            document.getElementById('pdfModal').style.display = 'none';
+        }
+
+        function descargarPdf() {
+            const responsable = document.getElementById('responsableInput').value.trim();
+            if (!responsable) {
+                alert("Por favor, ingrese el nombre del responsable de la cuenta.");
+                return;
+            }
+
+            // Construimos la URL base con los filtros actuales
+            let url = "{{ url_for('main.export_pdf', q=search_query, empresa=empresa_filter, status=status_filter, mes=mes_filter) }}";
+            
+            // Reemplazamos los caracteres especiales del HTML por '&' para agregar el nuevo parámetro
+            url = url.replace(/&amp;/g, '&');
+            
+            // Añadimos el responsable a la URL
+            url += "&responsable=" + encodeURIComponent(responsable);
+
+            // Redirigir para descargar
+            window.location.href = url;
+            closePdfModal();
+        }
     </script>
 
 </body>
