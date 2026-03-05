@@ -276,6 +276,10 @@
                             onclick="openPdfModal()">
                             📄 Generar Informe PDF
                         </button>
+                        <button type="button" class="btn" style="background: #dc3545; color: white;"
+                            onclick="descargarTablaPdf()">
+                            📄 Descargar Vista Actual (PDF)
+                        </button>
                     </div>
                 </div>
             </form>
@@ -489,6 +493,17 @@
             // Redirigir para descargar
             window.location.href = url;
             closePdfModal();
+        }
+
+        function descargarTablaPdf() {
+            // Construimos la URL leyendo los parámetros actuales
+            let url = "{{ url_for('main.export_table_pdf', q=search_query, empresa=empresa_filter, status=status_filter, mes=mes_filter) }}";
+
+            // Reparamos posibles errores de formato HTML en los parámetros
+            url = url.replace(/&amp;/g, '&');
+
+            // Redirigimos a la ruta de descarga
+            window.location.href = url;
         }
     </script>
 

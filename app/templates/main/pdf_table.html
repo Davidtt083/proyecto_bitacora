@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Reporte Tabla de Bitácoras</title>
+    <style>
+        @page {
+            size: A4 landscape; /* Formato horizontal */
+            margin: 1cm;
+        }
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 8px; /* Letra pequeña para que quepan todas las columnas */
+            color: #333;
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 15px;
+            color: #5a5a5a;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #666;
+            padding: 5px;
+            text-align: left;
+            vertical-align: top;
+            word-wrap: break-word;
+        }
+        th {
+            background-color: #5a5a5a;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+        }
+        .text-center { text-align: center; }
+    </style>
+</head>
+<body>
+
+    <h2>Reporte de Bitácoras (Vista de Tabla)</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 5%;">Fecha</th>
+                <th style="width: 9%;">Nombre</th>
+                <th style="width: 7%;">Empresa</th>
+                <th style="width: 7%;">Puesto</th>
+                <th style="width: 4%;">Días</th>
+                <th style="width: 9%;">Jefe / Cargo</th>
+                <th style="width: 9%;">Proyecto</th>
+                <th style="width: 5%;">Status</th>
+                <th style="width: 19%;">Actividades</th>
+                <th style="width: 9%;">Herramientas</th>
+                <th style="width: 9%;">Entregable / Medio</th>
+                <th style="width: 8%;">Incidencias</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in reportes %}
+            <tr>
+                <td class="text-center">{{ r.timestamp.strftime('%d/%m/%Y') }}</td>
+                <td><strong>{{ r.nombre_completo }}</strong></td>
+                <td>{{ r.empresa }}</td>
+                <td>{{ r.puesto }}</td>
+                <td class="text-center">{{ r.dias_contados }}</td>
+                <td>{{ r.nombre_jefe_inmediato }}<br><span style="color: #555;">{{ r.cargo_jefe_inmediato }}</span></td>
+                <td>{{ r.proyecto_actual }}</td>
+                <td class="text-center">{{ r.status }}</td>
+                <td>{{ r.actividades }}</td>
+                <td>{{ r.herramientas_utilizadas or '-' }}</td>
+                <td>{{ r.entregable_generado or '-' }}<br><span style="color: #555;">{{ r.medio_entregable or '' }}</span></td>
+                <td>{{ r.incidencias or 'Ninguna' }}</td>
+            </tr>
+            {% endfor %}
+            
+            {% if not reportes %}
+            <tr>
+                <td colspan="12" class="text-center" style="padding: 20px; font-size: 12px;">No se encontraron registros con los filtros actuales.</td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+
+</body>
+</html>

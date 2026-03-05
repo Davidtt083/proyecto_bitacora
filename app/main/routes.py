@@ -376,3 +376,62 @@ def export_pdf():
     response.headers['Content-Disposition'] = 'attachment; filename=informe_mensual.pdf'
     
     return response
+
+@bp.route('/admin/exportar_tabla_pdf')
+@login_required
+def export_table_pdf():
+    if current_user.rol != 'admin':
+        abort(403)
+    
+    search_query = request.args.get('q', '')
+    empresa_filter = request.args.get('empresa', '')
+    status_filter = request.args.get('status', '')
+    mes_filter = request.args.get('mes', '')
+
+    query = Bitacora.query
+
+    # Los mismos filtros exactos del Dashboard
+    if search_query:
+        query = query.filter(
+            or_(
+                Bitacora.nombre_completo.ilike(f'%{search_query}%'),
+                Bitacora.proyecto_actual.ilike(f'%{search_query}%'),
+                Bitacora.actividades.ilike(f'%{search_query}%'),
+                Bitacora.nombre_jefe_inmediato.ilike(f'%{search_query}%'),
+                Bitacora.cargo_jefe_inmediato.ilike(f'%{search_query}%'),
+                Bitacora.empresa.ilike(f'%{search_query}%')
+            )
+        )
+    if empresa_filter:
+        query = query.filter(Bitacora.empresa == empresa_filter)
+    if status_filter:
+        query = query.filter(Bitacora.status == status_filter)
+    if mes_filter:
+        año, mes = map(int, mes_filter.split('-'))
+        ultimo_dia = calendar.monthrange(año, mes)[1]
+        fecha_inicio = datetime(año, mes, 1)
+        fecha_fin = datetime(año, mes, ultimo_dia, 23, 59, 59)
+        query = query.filter(Bitacora.timestamp >= fecha_inicio, Bitacora.timestamp <= fecha_fin)
+
+    reportes = query.order_by(Bitacora.timestamp.desc()).all()
+
+    # Contar los días laborados para mostrarlos en la tabla
+    for r in reportes:
+        if r.periodo_semanal:
+            r.dias_contados = len([d for d in r.periodo_semanal.split('|') if d.strip()])
+        else:
+            r.dias_contados = 0
+
+    # Renderizar HTML a PDF
+    html = render_template('main/pdf_table.html', reportes=reportes)
+    result = BytesIO()
+    pdf = pisa.CreatePDF(BytesIO(html.encode('utf-8')), dest=result, encoding='utf-8')
+
+    if pdf.err:
+        flash('Hubo un error al generar el PDF de la tabla.', 'danger')
+        return redirect(url_for('main.admin_dashboard'))
+
+    response = make_response(result.getvalue())
+    response.headers['Content-Type'] = 'application/pdf'
+    response.headers['Content-Disposition'] = 'attachment; filename=vista_tabla_bitacoras.pdf'
+    return response
