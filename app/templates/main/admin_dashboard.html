@@ -371,6 +371,11 @@
 
                                 <hr style="width: 100%; border: 0.5px solid #eee; margin: 2px 0;">
 
+                                <a href="{{ url_for('main.edit_report', report_id=reporte.id) }}" class="btn"
+                                    style="background: #17a2b8; color: white; padding: 6px; font-size: 11px; width: 100%; box-sizing: border-box; text-align: center; margin-bottom: 4px;">
+                                    Editar Fila
+                                </a>
+
                                 <!-- Eliminar solo este reporte -->
                                 <form action="{{ url_for('main.delete_report', report_id=reporte.id) }}" method="POST"
                                     style="margin: 0;" onsubmit="return confirm('¿Borrar solo este reporte?');">

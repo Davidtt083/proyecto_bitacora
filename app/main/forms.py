@@ -48,10 +48,41 @@ class EditUserAdminForm(FlaskForm):
         ('PROGREDI', 'PROGREDI'),
     ], validators=[DataRequired()])
     puesto = StringField('Puesto / Cargo', validators=[DataRequired()])
-    
+    jefe_directo = StringField('A quién reporta (Jefe Directo)', validators=[DataRequired()])    
     status = SelectField('Estado del Usuario', choices=[
         ('1', 'Vigente'),
         ('0', 'No Vigente')
     ], validators=[DataRequired()])
     
     submit = SubmitField('Actualizar Usuario')
+
+class EditReportAdminForm(FlaskForm):
+    nombre_completo = StringField('Nombre Completo', validators=[DataRequired()])
+    empresa = SelectField('Empresa Cliente', choices=[ 
+        ('Empresa A', 'Empresa A'),
+        ('Empresa B', 'Empresa B'),
+        ('Empresa C', 'Empresa C'),
+        ('Empresa D', 'Empresa D'),
+        ('Independiente', 'Trabajador Independiente')
+    ], validators=[DataRequired()])
+    puesto = StringField('Puesto / Cargo', validators=[DataRequired()])
+    nombre_jefe_inmediato = StringField('Jefe Inmediato', validators=[DataRequired()])
+    cargo_jefe_inmediato = StringField('Cargo del Jefe', validators=[DataRequired()])
+    
+    # Lo dejamos como texto libre para que el admin pueda corregir la cadena de fechas fácilmente
+    periodo_semanal = StringField('Días Laborados (Separados por |)', validators=[DataRequired()]) 
+    
+    proyecto_actual = StringField('Proyecto Actual', validators=[DataRequired()])
+    actividades = TextAreaField('Actividades Realizadas', validators=[DataRequired()])
+    herramientas_utilizadas = StringField('Herramientas Utilizadas')
+    
+    status = SelectField('Status', choices=[
+        ('En proceso', 'En proceso'),
+        ('Finalizado', 'Finalizado')
+    ], validators=[DataRequired()])
+    
+    entregable_generado = StringField('Entregable Generado')
+    medio_entregable = StringField('Medio Entregable')
+    incidencias = TextAreaField('Incidencias / Observaciones')
+    
+    submit = SubmitField('Actualizar Fila')

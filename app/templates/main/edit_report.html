@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f4f7f9; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px;}
+        .container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 800px; }
+        h2 { text-align: center; color: #333; margin-top: 0; margin-bottom: 20px; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .full-width { grid-column: span 2; }
+        .form-group { display: flex; flex-direction: column; }
+        label { font-weight: 600; margin-bottom: 5px; font-size: 13px; color: #555; }
+        input, select, textarea { padding: 10px; border: 1.5px solid #ddd; border-radius: 8px; font-size: 14px; width: 100%; box-sizing: border-box;}
+        textarea { height: 80px; resize: vertical; }
+        .btn-submit { background: #17a2b8; color: white; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 20px; font-size: 16px;}
+        .btn-back { display: block; text-align: center; margin-top: 15px; color: #5a5a5a; text-decoration: none; font-weight: bold; }
+        @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } .full-width { grid-column: span 1; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Editar Fila de Bitácora</h2>
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            <div class="form-grid">
+                <div class="form-group">{{ form.nombre_completo.label }} {{ form.nombre_completo() }}</div>
+                <div class="form-group">{{ form.empresa.label }} {{ form.empresa() }}</div>
+                <div class="form-group">{{ form.puesto.label }} {{ form.puesto() }}</div>
+                <div class="form-group">{{ form.periodo_semanal.label }} {{ form.periodo_semanal(placeholder="Ej: 12/03/2024 | 13/03/2024") }}</div>
+                <div class="form-group">{{ form.nombre_jefe_inmediato.label }} {{ form.nombre_jefe_inmediato() }}</div>
+                <div class="form-group">{{ form.cargo_jefe_inmediato.label }} {{ form.cargo_jefe_inmediato() }}</div>
+                <div class="form-group full-width">{{ form.proyecto_actual.label }} {{ form.proyecto_actual() }}</div>
+                <div class="form-group full-width">{{ form.actividades.label }} {{ form.actividades() }}</div>
+                <div class="form-group">{{ form.herramientas_utilizadas.label }} {{ form.herramientas_utilizadas() }}</div>
+                <div class="form-group">{{ form.status.label }} {{ form.status() }}</div>
+                <div class="form-group">{{ form.entregable_generado.label }} {{ form.entregable_generado() }}</div>
+                <div class="form-group">{{ form.medio_entregable.label }} {{ form.medio_entregable() }}</div>
+                <div class="form-group full-width">{{ form.incidencias.label }} {{ form.incidencias() }}</div>
+            </div>
+            {{ form.submit(class="btn-submit") }}
+        </form>
+        <a href="{{ url_for('main.admin_dashboard') }}" class="btn-back">← Cancelar y volver</a>
+    </div>
+</body>
+</html>

@@ -6,7 +6,7 @@ from flask_login import login_required, current_user
 from sqlalchemy import func,or_ 
 from app import db
 from app.main import bp
-from app.main.forms import BitacoraForm, EditUserAdminForm
+from app.main.forms import BitacoraForm, EditUserAdminForm, EditReportAdminForm
 from app.models import Bitacora, User  
 from datetime import datetime, timedelta
 import calendar
@@ -199,6 +199,7 @@ def edit_user(user_id):
         user.empresa = form.empresa.data
         user.empresa_origen = form.empresa_origen.data
         user.puesto = form.puesto.data
+        user.jefe_directo = form.jefe_directo.data
         user.activo = (form.status.data == '1')
         
         # 2. NUEVO: Actualizamos TODOS los reportes anteriores de este usuario
@@ -207,6 +208,7 @@ def edit_user(user_id):
             reporte.nombre_completo = form.nombre.data
             reporte.empresa = form.empresa.data
             reporte.puesto = form.puesto.data
+            reporte.nombre_jefe_inmediato = form.jefe_directo.data
             
         # Guardamos todo en la base de datos
         db.session.commit()
@@ -222,6 +224,7 @@ def edit_user(user_id):
         form.empresa.data = user.empresa
         form.empresa_origen.data = user.empresa_origen
         form.puesto.data = user.puesto
+        form.jefe_directo.data = user.jefe_directo 
         form.status.data = '1' if user.activo else '0'
 
     return render_template('main/edit_user.html', title='Editar Usuario', form=form, user=user)
@@ -435,3 +438,49 @@ def export_table_pdf():
     response.headers['Content-Type'] = 'application/pdf'
     response.headers['Content-Disposition'] = 'attachment; filename=vista_tabla_bitacoras.pdf'
     return response
+
+@bp.route('/admin/bitacora/<int:report_id>/editar', methods=['GET', 'POST'])
+@login_required
+def edit_report(report_id):
+    if current_user.rol != 'admin':
+        abort(403)
+        
+    reporte = Bitacora.query.get_or_404(report_id)
+    form = EditReportAdminForm()
+
+    if form.validate_on_submit():
+        reporte.nombre_completo = form.nombre_completo.data
+        reporte.empresa = form.empresa.data
+        reporte.puesto = form.puesto.data
+        reporte.nombre_jefe_inmediato = form.nombre_jefe_inmediato.data
+        reporte.cargo_jefe_inmediato = form.cargo_jefe_inmediato.data
+        reporte.periodo_semanal = form.periodo_semanal.data
+        reporte.proyecto_actual = form.proyecto_actual.data
+        reporte.actividades = form.actividades.data
+        reporte.herramientas_utilizadas = form.herramientas_utilizadas.data
+        reporte.status = form.status.data
+        reporte.entregable_generado = form.entregable_generado.data
+        reporte.medio_entregable = form.medio_entregable.data
+        reporte.incidencias = form.incidencias.data
+        
+        db.session.commit()
+        flash('La fila de la bitácora ha sido corregida y actualizada exitosamente.', 'success')
+        return redirect(url_for('main.admin_dashboard'))
+
+    elif request.method == 'GET':
+        # Llenamos el formulario con los datos actuales del reporte
+        form.nombre_completo.data = reporte.nombre_completo
+        form.empresa.data = reporte.empresa
+        form.puesto.data = reporte.puesto
+        form.nombre_jefe_inmediato.data = reporte.nombre_jefe_inmediato
+        form.cargo_jefe_inmediato.data = reporte.cargo_jefe_inmediato
+        form.periodo_semanal.data = reporte.periodo_semanal
+        form.proyecto_actual.data = reporte.proyecto_actual
+        form.actividades.data = reporte.actividades
+        form.herramientas_utilizadas.data = reporte.herramientas_utilizadas
+        form.status.data = reporte.status
+        form.entregable_generado.data = reporte.entregable_generado
+        form.medio_entregable.data = reporte.medio_entregable
+        form.incidencias.data = reporte.incidencias
+
+    return render_template('main/edit_report.html', title='Editar Fila', form=form, reporte=reporte)
