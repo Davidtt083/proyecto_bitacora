@@ -81,7 +81,10 @@ def admin_dashboard():
             or_(
                 Bitacora.nombre_completo.ilike(f'%{search_query}%'),
                 Bitacora.proyecto_actual.ilike(f'%{search_query}%'),
-                Bitacora.actividades.ilike(f'%{search_query}%')
+                Bitacora.actividades.ilike(f'%{search_query}%'),
+                Bitacora.nombre_jefe_inmediato.ilike(f'%{search_query}%'),
+                Bitacora.cargo_jefe_inmediato.ilike(f'%{search_query}%'),
+                Bitacora.empresa.ilike(f'%{search_query}%')
             )
         )
     if empresa_filter:
@@ -281,7 +284,10 @@ def export_pdf():
             or_(
                 Bitacora.nombre_completo.ilike(f'%{search_query}%'),
                 Bitacora.proyecto_actual.ilike(f'%{search_query}%'),
-                Bitacora.actividades.ilike(f'%{search_query}%')
+                Bitacora.actividades.ilike(f'%{search_query}%'),
+                Bitacora.nombre_jefe_inmediato.ilike(f'%{search_query}%'),
+                Bitacora.cargo_jefe_inmediato.ilike(f'%{search_query}%'),
+                Bitacora.empresa.ilike(f'%{search_query}%')
             )
         )
     # Como ya validamos que empresa_filter existe, este filtro siempre se aplicará
