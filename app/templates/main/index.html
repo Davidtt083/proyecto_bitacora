@@ -240,10 +240,10 @@
         }
 
         #datepicker {
-            color: transparent !important;
+            color: #6c757d !important;
             /* Oculta el texto de las fechas */
-            text-shadow: 0 0 0 transparent;
-            /* Asegura que no haya sombras del texto */
+            /*text-shadow: 0 0 0 transparent;
+             Asegura que no haya sombras del texto */
             cursor: pointer;
         }
 
@@ -274,13 +274,7 @@
             </div>
         </div>
 
-        {% with messages = get_flashed_messages() %}
-        {% if messages %}
-        {% for message in messages %}
-        <div class="flash-messages">{{ message }}</div>
-        {% endfor %}
-        {% endif %}
-        {% endwith %}
+       
 
         <form method="POST">
             {{ form.hidden_tag() }}
@@ -451,6 +445,28 @@
             });
         });
     </script>
+
+    <!-- Librería SweetAlert2 para Popups -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Nuevo sistema de alertas -->
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <script>
+          document.addEventListener('DOMContentLoaded', function() {
+              Swal.fire({
+                  title: '¡Guardado Exitoso!',
+                  text: '{{ messages[0] }}',
+                  icon: 'success',
+                  confirmButtonText: 'Continuar',
+                  confirmButtonColor: '#28a745',
+                  allowOutsideClick: false, /* Evita que se cierre si dan clic afuera */
+                  backdrop: `rgba(0,0,0,0.6)` /* Fondo oscuro para resaltar la alerta */
+              });
+          });
+        </script>
+      {% endif %}
+    {% endwith %}
 
 </body>
 
