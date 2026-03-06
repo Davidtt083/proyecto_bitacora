@@ -274,7 +274,7 @@
             </div>
         </div>
 
-       
+
 
         <form method="POST">
             {{ form.hidden_tag() }}
@@ -446,23 +446,43 @@
         });
     </script>
 
-    <!-- Librería SweetAlert2 para Popups -->
+   <!-- Librería SweetAlert2 para Popups -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <!-- Nuevo sistema de alertas -->
-    {% with messages = get_flashed_messages() %}
+    <!-- Nuevo sistema de alertas inteligente -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         <script>
           document.addEventListener('DOMContentLoaded', function() {
-              Swal.fire({
-                  title: '¡Guardado Exitoso!',
-                  text: '{{ messages[0] }}',
-                  icon: 'success',
-                  confirmButtonText: 'Continuar',
-                  confirmButtonColor: '#28a745',
-                  allowOutsideClick: false, /* Evita que se cierre si dan clic afuera */
-                  backdrop: `rgba(0,0,0,0.6)` /* Fondo oscuro para resaltar la alerta */
-              });
+              {% for category, message in messages %}
+                  
+                  {% if category == 'guardado' %}
+                      /* Alerta Gigante para cuando guarda bitácora */
+                      Swal.fire({
+                          title: '¡Guardado Exitoso!',
+                          text: '{{ message }}',
+                          icon: 'success',
+                          confirmButtonText: 'Continuar',
+                          confirmButtonColor: '#28a745',
+                          allowOutsideClick: false,
+                          backdrop: `rgba(0,0,0,0.6)`
+                      });
+                      
+                  {% else %}
+                      /* Notificación pequeña (Toast) para el inicio de sesión */
+                      Swal.fire({
+                          title: 'Notificación',
+                          text: '{{ message }}',
+                          icon: 'success',
+                          toast: true,
+                          position: 'top-end',
+                          showConfirmButton: false,
+                          timer: 3000,
+                          timerProgressBar: true
+                      });
+                  {% endif %}
+
+              {% endfor %}
           });
         </script>
       {% endif %}

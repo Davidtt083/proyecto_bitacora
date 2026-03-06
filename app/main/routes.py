@@ -47,7 +47,7 @@ def index():
         )
         db.session.add(reporte)
         db.session.commit()
-        flash('¡Tu reporte de bitácora ha sido guardado exitosamente!')
+        flash('¡Tu reporte de bitácora ha sido guardado exitosamente!', 'guardado')
         return redirect(url_for('main.index'))
 
     return render_template('main/index.html', title='Nueva Bitácora', form=form)
