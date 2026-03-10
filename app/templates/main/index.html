@@ -264,13 +264,13 @@
 
     <div class="container">
         <div class="header">
-            <h2>Nueva Bitácora</h2>
+            <h2>Nueva bitácora</h2>
             <div class="btn-group">
                 {% if current_user.rol == 'admin' %}
-                <a href="{{ url_for('main.admin_dashboard') }}" class="btn admin-btn">Panel Admin</a>
-                <a href="{{ url_for('auth.register') }}" class="btn admin-btn">Registrar Usuario</a>
+                <a href="{{ url_for('main.admin_dashboard') }}" class="btn admin-btn">Panel admin</a>
+                <a href="{{ url_for('auth.register') }}" class="btn admin-btn">Registrar usuario</a>
                 {% endif %}
-                <a href="{{ url_for('auth.logout') }}" class="btn logout-btn">Cerrar Sesión</a>
+                <a href="{{ url_for('auth.logout') }}" class="btn logout-btn">Cerrar sesión</a>
             </div>
         </div>
 
@@ -459,7 +459,7 @@
                   {% if category == 'guardado' %}
                       /* Alerta Gigante para cuando guarda bitácora */
                       Swal.fire({
-                          title: '¡Guardado Exitoso!',
+                          title: '¡Guardado exitoso!',
                           text: '{{ message }}',
                           icon: 'success',
                           confirmButtonText: 'Continuar',

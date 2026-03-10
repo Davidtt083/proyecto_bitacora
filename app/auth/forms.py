@@ -5,15 +5,15 @@ from app.models import User
 
 # --- CLASE QUE FALTABA ---
 class LoginForm(FlaskForm):
-    email = StringField('Correo Electrónico', validators=[DataRequired(), Email()])
+    email = StringField('Correo electrónico', validators=[DataRequired(), Email()])
     password = PasswordField('Contraseña', validators=[DataRequired()])
     submit = SubmitField('Iniciar Sesión')
 
 # --- CLASE DE REGISTRO ACTUALIZADA ---
 class RegistrationForm(FlaskForm):
-    nombre = StringField('Nombre Completo', validators=[DataRequired()])
-    email = StringField('Correo Electrónico', validators=[DataRequired(), Email()])
-    telefono = StringField('Número Telefónico', validators=[DataRequired()])
+    nombre = StringField('Nombre completo', validators=[DataRequired()])
+    email = StringField('Correo electrónico', validators=[DataRequired(), Email()])
+    telefono = StringField('Número telefónico', validators=[DataRequired()])
     password = PasswordField('Contraseña', validators=[DataRequired()])
     password_confirm = PasswordField('Confirmar Contraseña', 
                                     validators=[DataRequired(), EqualTo('password')])
@@ -25,20 +25,20 @@ class RegistrationForm(FlaskForm):
         ('Empresa B', 'Empresa B'),
         ('Empresa C', 'Empresa C'),
         ('Empresa D', 'Empresa D'),
-        ('Independiente', 'Trabajador Independiente')
+        ('Independiente', 'Trabajador independiente')
     ], validators=[DataRequired()])
 
-    jefe_directo = StringField('A quién reportas (Jefe Directo)', validators=[DataRequired()])
-    puesto = StringField('Tu Puesto / Cargo', validators=[DataRequired()])
-    cargo_jefe = StringField('Cargo de tu Jefe Inmediato', validators=[DataRequired()])
-    proyecto_actual = StringField('Proyecto Actual', validators=[DataRequired()])
-    empresa_origen = SelectField('Empresa - Origen', choices=[
-        ('', '--- Seleccione una Empresa ---'),
+    jefe_directo = StringField('A quién reportas (Jefe directo)', validators=[DataRequired()])
+    puesto = StringField('Tu Puesto / cargo', validators=[DataRequired()])
+    cargo_jefe = StringField('Cargo de tu jefe inmediato', validators=[DataRequired()])
+    proyecto_actual = StringField('Proyecto actual', validators=[DataRequired()])
+    empresa_origen = SelectField('Empresa - origen', choices=[
+        ('', '--- Seleccione una empresa ---'),
         ('Krolls', 'Krolls'),
         ('PROGREDI', 'PROGREDI'),
     ], validators=[DataRequired()])
 
-    status = SelectField('Estado del Usuario', choices=[
+    status = SelectField('Estado del usuario', choices=[
         ('1', 'Vigente'),
         ('0', 'No Vigente')
     ], default='1', validators=[DataRequired()])

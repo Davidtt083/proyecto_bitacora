@@ -3,34 +3,34 @@ from wtforms import StringField, TextAreaField, SubmitField, SelectField
 from wtforms.validators import DataRequired, Email, Optional, URL, Length
 
 class BitacoraForm(FlaskForm):
-    nombre_completo = StringField('Nombre Completo', validators=[DataRequired(), Length(max=100)])
+    nombre_completo = StringField('Nombre completo', validators=[DataRequired(), Length(max=100)])
     empresa = SelectField('Empresa cliente', choices=[ 
         ('Empresa A', 'Empresa A'),
         ('Empresa B', 'Empresa B'),
         ('Empresa C', 'Empresa C'),
         ('Empresa D', 'Empresa D'),
-        ('Independiente', 'Trabajador Independiente')
+        ('Independiente', 'Trabajador independiente')
     ], validators=[DataRequired()])
-    puesto = StringField('Puesto / Cargo', validators=[DataRequired()])
-    periodo_semanal = StringField('Periodo Semanal (ej. Lun 02 - Vie 06 Oct)', validators=[DataRequired()])
+    puesto = StringField('Puesto / cargo', validators=[DataRequired()])
+    periodo_semanal = StringField('Periodo semanal (ej. Lun 02 - Vie 06 Oct)', validators=[DataRequired()])
     
-    nombre_jefe_inmediato = StringField('Nombre del Jefe Inmediato', validators=[DataRequired()])
-    cargo_jefe_inmediato = StringField('Cargo del Jefe Inmediato', validators=[DataRequired()])
+    nombre_jefe_inmediato = StringField('Nombre del jefe inmediato', validators=[DataRequired()])
+    cargo_jefe_inmediato = StringField('Cargo del jefe inmediato', validators=[DataRequired()])
     
-    proyecto_actual = StringField('Proyecto Actual', validators=[DataRequired()])
-    actividades = TextAreaField('Actividades Realizadas', validators=[DataRequired()])
+    proyecto_actual = StringField('Proyecto actual', validators=[DataRequired()])
+    actividades = TextAreaField('Actividades realizadas', validators=[DataRequired()])
     
-    herramientas_utilizadas = StringField('Herramientas Utilizadas')
-    status = SelectField('Status de la Actividad', choices=[
+    herramientas_utilizadas = StringField('Herramientas utilizadas')
+    status = SelectField('Estatus de la actividad', choices=[
         ('En proceso', 'En proceso'),
         ('Finalizado', 'Finalizado')
     ], validators=[DataRequired()], id="status-select") # Agregamos ID para JS
 
-    entregable_generado = StringField('Entregable Generado')
-    medio_entregable = StringField('Medio Entregable (Link, Carpeta, Correo, etc.)')
-    incidencias = TextAreaField('Incidencias / Observaciones (Opcional)')
+    entregable_generado = StringField('Entregable generado')
+    medio_entregable = StringField('Medio entregable (Link, Carpeta, Correo, etc.)')
+    incidencias = TextAreaField('Incidencias / observaciones (Opcional)')
     
-    submit = SubmitField('Guardar Reporte de Bitácora')
+    submit = SubmitField('Guardar reporte de bitácora')
 
 class EditUserAdminForm(FlaskForm):
     nombre = StringField('Nombre Completo', validators=[DataRequired()])
@@ -57,7 +57,7 @@ class EditUserAdminForm(FlaskForm):
     submit = SubmitField('Actualizar Usuario')
 
 class EditReportAdminForm(FlaskForm):
-    nombre_completo = StringField('Nombre Completo', validators=[DataRequired()])
+    nombre_completo = StringField('Nombre completo', validators=[DataRequired()])
     empresa = SelectField('Empresa Cliente', choices=[ 
         ('Empresa A', 'Empresa A'),
         ('Empresa B', 'Empresa B'),
@@ -76,7 +76,7 @@ class EditReportAdminForm(FlaskForm):
     actividades = TextAreaField('Actividades Realizadas', validators=[DataRequired()])
     herramientas_utilizadas = StringField('Herramientas Utilizadas')
     
-    status = SelectField('Status', choices=[
+    status = SelectField('Estatus', choices=[
         ('En proceso', 'En proceso'),
         ('Finalizado', 'Finalizado')
     ], validators=[DataRequired()])
