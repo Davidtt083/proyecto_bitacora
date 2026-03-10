@@ -28,7 +28,7 @@ class BitacoraForm(FlaskForm):
 
     entregable_generado = StringField('Entregable generado')
     medio_entregable = StringField('Medio entregable (Link, Carpeta, Correo, etc.)')
-    incidencias = TextAreaField('Incidencias / observaciones (Opcional)')
+    incidencias = TextAreaField('Incidencias / observaciones (opcional)')
     
     submit = SubmitField('Guardar reporte de bitácora')
 
