@@ -33,56 +33,56 @@ class BitacoraForm(FlaskForm):
     submit = SubmitField('Guardar reporte de bitácora')
 
 class EditUserAdminForm(FlaskForm):
-    nombre = StringField('Nombre Completo', validators=[DataRequired()])
-    email = StringField('Correo Electrónico', validators=[DataRequired(), Email()])
-    telefono = StringField('Número Telefónico', validators=[DataRequired()])
+    nombre = StringField('Nombre completo', validators=[DataRequired()])
+    email = StringField('Correo electrónico', validators=[DataRequired(), Email()])
+    telefono = StringField('Número telefónico', validators=[DataRequired()])
     empresa = SelectField('Empresa', choices=[ 
         ('Empresa A', 'Empresa A'),
         ('Empresa B', 'Empresa B'),
         ('Empresa C', 'Empresa C'),
         ('Empresa D', 'Empresa D'),
-        ('Independiente', 'Trabajador Independiente')
+        ('Independiente', 'Trabajador independiente')
     ], validators=[DataRequired()])
     empresa_origen = SelectField('Empresa Origen', choices=[
         ('Krolls', 'Krolls'),
         ('PROGREDI', 'PROGREDI'),
     ], validators=[DataRequired()])
-    puesto = StringField('Puesto / Cargo', validators=[DataRequired()])
-    jefe_directo = StringField('A quién reporta (Jefe Directo)', validators=[DataRequired()])    
-    status = SelectField('Estado del Usuario', choices=[
+    puesto = StringField('Puesto / cargo', validators=[DataRequired()])
+    jefe_directo = StringField('A quién reporta (Jefe directo)', validators=[DataRequired()])    
+    status = SelectField('Estado del usuario', choices=[
         ('1', 'Vigente'),
-        ('0', 'No Vigente')
+        ('0', 'No vigente')
     ], validators=[DataRequired()])
     
     submit = SubmitField('Actualizar Usuario')
 
 class EditReportAdminForm(FlaskForm):
     nombre_completo = StringField('Nombre completo', validators=[DataRequired()])
-    empresa = SelectField('Empresa Cliente', choices=[ 
+    empresa = SelectField('Empresa cliente', choices=[ 
         ('Empresa A', 'Empresa A'),
         ('Empresa B', 'Empresa B'),
         ('Empresa C', 'Empresa C'),
         ('Empresa D', 'Empresa D'),
-        ('Independiente', 'Trabajador Independiente')
+        ('Independiente', 'Trabajador independiente')
     ], validators=[DataRequired()])
-    puesto = StringField('Puesto / Cargo', validators=[DataRequired()])
-    nombre_jefe_inmediato = StringField('Jefe Inmediato', validators=[DataRequired()])
-    cargo_jefe_inmediato = StringField('Cargo del Jefe', validators=[DataRequired()])
+    puesto = StringField('Puesto / cargo', validators=[DataRequired()])
+    nombre_jefe_inmediato = StringField('Jefe inmediato', validators=[DataRequired()])
+    cargo_jefe_inmediato = StringField('Cargo del jefe', validators=[DataRequired()])
     
     # Lo dejamos como texto libre para que el admin pueda corregir la cadena de fechas fácilmente
     periodo_semanal = StringField('Días Laborados (Separados por |)', validators=[DataRequired()]) 
     
-    proyecto_actual = StringField('Proyecto Actual', validators=[DataRequired()])
-    actividades = TextAreaField('Actividades Realizadas', validators=[DataRequired()])
-    herramientas_utilizadas = StringField('Herramientas Utilizadas')
+    proyecto_actual = StringField('Proyecto actual', validators=[DataRequired()])
+    actividades = TextAreaField('Actividades realizadas', validators=[DataRequired()])
+    herramientas_utilizadas = StringField('Herramientas utilizadas')
     
     status = SelectField('Estatus', choices=[
         ('En proceso', 'En proceso'),
         ('Finalizado', 'Finalizado')
     ], validators=[DataRequired()])
     
-    entregable_generado = StringField('Entregable Generado')
-    medio_entregable = StringField('Medio Entregable')
-    incidencias = TextAreaField('Incidencias / Observaciones')
+    entregable_generado = StringField('Entregable generado')
+    medio_entregable = StringField('Medio entregable')
+    incidencias = TextAreaField('Incidencias / observaciones')
     
     submit = SubmitField('Actualizar Fila')
