@@ -14,8 +14,8 @@ class BitacoraForm(FlaskForm):
     puesto = StringField('Puesto / cargo', validators=[DataRequired()])
     periodo_semanal = StringField('Periodo semanal (ej. Lun 02 - Vie 06 Oct)', validators=[DataRequired()])
     
-    nombre_jefe_inmediato = StringField('Nombre del jefe inmediato', validators=[DataRequired()])
-    cargo_jefe_inmediato = StringField('Cargo del jefe inmediato', validators=[DataRequired()])
+    nombre_jefe_inmediato = StringField('Nombre del jefe directo', validators=[DataRequired()])
+    cargo_jefe_inmediato = StringField('Cargo del jefe directo', validators=[DataRequired()])
     
     proyecto_actual = StringField('Proyecto actual', validators=[DataRequired()])
     actividades = TextAreaField('Actividades realizadas', validators=[DataRequired()])
