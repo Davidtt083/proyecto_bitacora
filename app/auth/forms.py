@@ -28,9 +28,9 @@ class RegistrationForm(FlaskForm):
         ('Independiente', 'Trabajador independiente')
     ], validators=[DataRequired()])
 
-    jefe_directo = StringField('A quién reportas (Jefe directo)', validators=[DataRequired()])
-    puesto = StringField('Tu Puesto / cargo', validators=[DataRequired()])
-    cargo_jefe = StringField('Cargo de tu jefe inmediato', validators=[DataRequired()])
+    jefe_directo = StringField('A quién reporta (jefe directo)', validators=[DataRequired()])
+    puesto = StringField('Puesto / cargo', validators=[DataRequired()])
+    cargo_jefe = StringField('Cargo de jefe directo', validators=[DataRequired()])
     proyecto_actual = StringField('Proyecto actual', validators=[DataRequired()])
     empresa_origen = SelectField('Empresa - origen', choices=[
         ('', '--- Seleccione una empresa ---'),
