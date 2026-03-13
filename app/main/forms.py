@@ -43,18 +43,18 @@ class EditUserAdminForm(FlaskForm):
         ('Empresa D', 'Empresa D'),
         ('Independiente', 'Trabajador independiente')
     ], validators=[DataRequired()])
-    empresa_origen = SelectField('Empresa Origen', choices=[
+    empresa_origen = SelectField('Empresa origen', choices=[
         ('Krolls', 'Krolls'),
         ('PROGREDI', 'PROGREDI'),
     ], validators=[DataRequired()])
     puesto = StringField('Puesto / cargo', validators=[DataRequired()])
-    jefe_directo = StringField('A quién reporta (Jefe directo)', validators=[DataRequired()])    
+    jefe_directo = StringField('A quién reporta (jefe directo)', validators=[DataRequired()])    
     status = SelectField('Estado del usuario', choices=[
         ('1', 'Vigente'),
         ('0', 'No vigente')
     ], validators=[DataRequired()])
     
-    submit = SubmitField('Actualizar Usuario')
+    submit = SubmitField('Actualizar usuario')
 
 class EditReportAdminForm(FlaskForm):
     nombre_completo = StringField('Nombre completo', validators=[DataRequired()])
