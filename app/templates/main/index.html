@@ -395,7 +395,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // 1. CÁLCULO DEL RANGO (Lunes a Viernes de esta semana)
+            // 1. CÁLCULO DEL RANGO (Lunes a Domingo de esta semana)
             const hoy = new Date();
             const diaSemana = hoy.getDay(); // 0=Dom, 1=Lun...
 
@@ -405,12 +405,12 @@
             lunes.setDate(hoy.getDate() + diffLunes);
             lunes.setHours(0, 0, 0, 0);
 
-            // Calcular el Viernes
-            const viernes = new Date(lunes);
-            viernes.setDate(lunes.getDate() + 4);
-            viernes.setHours(23, 59, 59, 999);
+            // Calcular el Domingo (Lunes + 6 días)
+            const domingo = new Date(lunes);
+            domingo.setDate(lunes.getDate() + 6);
+            domingo.setHours(23, 59, 59, 999);
 
-            // 2. CREAR ARREGLO DE DÍAS POR DEFECTO (Lun, Mar, Mie, Jue, Vie)
+            // 2. CREAR ARREGLO DE DÍAS POR DEFECTO (Dejamos Lunes a Viernes preseleccionados por comodidad)
             const diasPorDefecto = [];
             for (let i = 0; i < 5; i++) {
                 let d = new Date(lunes);
@@ -424,12 +424,12 @@
                 dateFormat: "d/m/Y",
                 locale: "es",
                 conjunction: " | ",
-                minDate: lunes,    // Restringir a esta semana
-                maxDate: viernes,
+                minDate: lunes,    // Restringir desde el Lunes
+                maxDate: domingo,  // AHORA PERMITE HASTA EL DOMINGO
                 defaultDate: diasPorDefecto, // PRE-SELECCIONAR LUNES A VIERNES
                 disableMobile: "true",
 
-                // Cada vez que cambie, podemos actualizar el placeholder para dar feedback
+                // Cada vez que cambie, actualizamos el texto
                 onChange: function (selectedDates, dateStr, instance) {
                     if (selectedDates.length === 0) {
                         instance.input.placeholder = "Ningún día seleccionado";
@@ -440,52 +440,52 @@
 
                 // Al cargar por primera vez
                 onReady: function (selectedDates, dateStr, instance) {
-                    instance.input.placeholder = "5 días seleccionados (L-V)";
+                    instance.input.placeholder = selectedDates.length + " días seleccionados";
                 }
             });
         });
     </script>
 
-   <!-- Librería SweetAlert2 para Popups -->
+    <!-- Librería SweetAlert2 para Popups -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <!-- Nuevo sistema de alertas inteligente -->
     {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        <script>
-          document.addEventListener('DOMContentLoaded', function() {
-              {% for category, message in messages %}
-                  
-                  {% if category == 'guardado' %}
-                      /* Alerta Gigante para cuando guarda bitácora */
-                      Swal.fire({
-                          title: '¡Guardado exitoso!',
-                          text: '{{ message }}',
-                          icon: 'success',
-                          confirmButtonText: 'Continuar',
-                          confirmButtonColor: '#28a745',
-                          allowOutsideClick: false,
-                          backdrop: `rgba(0,0,0,0.6)`
-                      });
-                      
-                  {% else %}
-                      /* Notificación pequeña (Toast) para el inicio de sesión */
-                      Swal.fire({
-                          title: 'Notificación',
-                          text: '{{ message }}',
-                          icon: 'success',
-                          toast: true,
-                          position: 'top-end',
-                          showConfirmButton: false,
-                          timer: 3000,
-                          timerProgressBar: true
-                      });
-                  {% endif %}
+    {% if messages %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            {% for category, message in messages %}
 
-              {% endfor %}
-          });
-        </script>
-      {% endif %}
+            {% if category == 'guardado' %}
+            /* Alerta Gigante para cuando guarda bitácora */
+            Swal.fire({
+                title: '¡Guardado exitoso!',
+                text: '{{ message }}',
+                icon: 'success',
+                confirmButtonText: 'Continuar',
+                confirmButtonColor: '#28a745',
+                allowOutsideClick: false,
+                backdrop: `rgba(0,0,0,0.6)`
+            });
+
+            {% else %}
+            /* Notificación pequeña (Toast) para el inicio de sesión */
+            Swal.fire({
+                title: 'Notificación',
+                text: '{{ message }}',
+                icon: 'success',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true
+            });
+            {% endif %}
+
+            {% endfor %}
+        });
+    </script>
+    {% endif %}
     {% endwith %}
 
 </body>

@@ -312,7 +312,7 @@
                         <!-- REGRESA A TEXTO NORMAL -->
                         <td>{{ reporte.timestamp.strftime('%d/%m/%Y %H:%M') }}</td>
                         <td> <strong>{{ reporte.nombre_completo }}</strong><br>
-                            <span style="font-size: 11px; color: #666;">📞 {{ reporte.autor.telefono or 'N/A' }}</span>
+                            
                         </td>
                         <td style="text-align: center;">
                             {% if reporte.autor.activo %}

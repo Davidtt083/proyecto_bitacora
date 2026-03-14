@@ -19,8 +19,8 @@ class RegistrationForm(FlaskForm):
                                     validators=[DataRequired(), EqualTo('password')])
     
     # Campo Empresa como SELECT
-    empresa = SelectField('Empresa - Cliente', choices=[
-        ('', '--- Seleccione una Empresa ---'),
+    empresa = SelectField('Empresa - cliente', choices=[
+        ('', '--- Seleccione una empresa ---'),
         ('Empresa A', 'Empresa A'),
         ('Empresa B', 'Empresa B'),
         ('Empresa C', 'Empresa C'),
@@ -43,7 +43,7 @@ class RegistrationForm(FlaskForm):
         ('0', 'No Vigente')
     ], default='1', validators=[DataRequired()])
     
-    submit = SubmitField('Registrarse')
+    submit = SubmitField('Registrar')
 
     def validate_email(self, email):
         user = User.query.filter_by(email=email.data).first()
