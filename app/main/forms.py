@@ -66,11 +66,11 @@ class EditReportAdminForm(FlaskForm):
         ('Independiente', 'Trabajador independiente')
     ], validators=[DataRequired()])
     puesto = StringField('Puesto / cargo', validators=[DataRequired()])
-    nombre_jefe_inmediato = StringField('Jefe inmediato', validators=[DataRequired()])
+    nombre_jefe_inmediato = StringField('Jefe directo', validators=[DataRequired()])
     cargo_jefe_inmediato = StringField('Cargo del jefe', validators=[DataRequired()])
     
     # Lo dejamos como texto libre para que el admin pueda corregir la cadena de fechas fácilmente
-    periodo_semanal = StringField('Días Laborados (Separados por |)', validators=[DataRequired()]) 
+    periodo_semanal = StringField('Días laborados (separados por |)', validators=[DataRequired()]) 
     
     proyecto_actual = StringField('Proyecto actual', validators=[DataRequired()])
     actividades = TextAreaField('Actividades realizadas', validators=[DataRequired()])
@@ -85,4 +85,4 @@ class EditReportAdminForm(FlaskForm):
     medio_entregable = StringField('Medio entregable')
     incidencias = TextAreaField('Incidencias / observaciones')
     
-    submit = SubmitField('Actualizar Fila')
+    submit = SubmitField('Actualizar fila')
