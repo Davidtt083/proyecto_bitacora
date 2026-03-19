@@ -18,15 +18,15 @@ with app.app_context():
     
     if not admin:
         admin = User(
-            nombre='Administrador Principal',
-            email='admin@gmail.com',    # <-- CAMBIA POR TU CORREO
+            nombre='Jorge Luis Medellín Santillan',    # <-- CAMBIA POR TU NOMBRE
+            email='jorge.medellin@progredi.com.mx',    # <-- CAMBIA POR TU CORREO
             telefono='0000000000',
             empresa='Administración',
-            puesto='Director',
+            puesto='Administrador',
             rol='admin',
             activo=True
         )
-        admin.set_password('Admin1234!')    # <-- CAMBIA POR TU CONTRASEÑA
+        admin.set_password('J0rG3*2026!')    # <-- CAMBIA POR TU CONTRASEÑA
         db.session.add(admin)
         db.session.commit()
         print("✅ Administrador creado con éxito.")
