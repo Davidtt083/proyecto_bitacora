@@ -29,6 +29,35 @@ def index():
         form.proyecto_actual.data = current_user.proyecto_actual
 
     if form.validate_on_submit():
+         # --- NUEVA VALIDACIÓN: EVITAR DÍAS REPETIDOS ---
+        # 1. Separamos los días que el usuario seleccionó en el calendario
+        dias_nuevos = [d.strip() for d in form.periodo_semanal.data.split('|') if d.strip()]
+        
+        # 2. Traemos todas las bitácoras previas del usuario
+        bitacoras_usuario = Bitacora.query.filter_by(user_id=current_user.id).all()
+        
+        dias_duplicados = []
+        for reporte_previo in bitacoras_usuario:
+            if reporte_previo.periodo_semanal:
+                dias_viejos = [d.strip() for d in reporte_previo.periodo_semanal.split('|') if d.strip()]
+                # 3. Comparamos si algún día nuevo ya existe en los viejos
+                for d_nuevo in dias_nuevos:
+                    if d_nuevo in dias_viejos:
+                        dias_duplicados.append(d_nuevo)
+        
+        # 4. Si encontramos repetidos, bloqueamos el guardado y avisamos
+        if dias_duplicados:
+            # Quitamos duplicados visuales y unimos el texto
+            dias_unicos = sorted(list(set(dias_duplicados)))
+            dias_str = ", ".join(dias_unicos)
+            
+            # Mandamos el error con la categoría 'error'
+            flash(f'Ya tienes actividades registradas en estos días: {dias_str}. Desmárcalos del calendario para poder continuar.', 'error')
+            
+            # Regresamos el formulario con los datos llenos para que no tenga que volver a escribir todo
+            return render_template('main/index.html', title='Nueva Bitácora', form=form)
+        # --- FIN DE LA VALIDACIÓN ---
+        
         reporte = Bitacora(
             nombre_completo=form.nombre_completo.data,
             empresa=current_user.empresa, 

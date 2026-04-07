@@ -449,14 +449,25 @@
             {% for category, message in messages %}
 
             {% if category == 'guardado' %}
-            /* Alerta Gigante para cuando guarda bitácora */
+            /* Alerta Gigante de Éxito */
             Swal.fire({
-                title: '¡Guardado exitoso!',
+                title: '¡Guardado Exitoso!',
                 text: '{{ message }}',
                 icon: 'success',
                 confirmButtonText: 'Continuar',
                 confirmButtonColor: '#28a745',
                 allowOutsideClick: false,
+                backdrop: `rgba(0,0,0,0.6)`
+            });
+
+            {% elif category == 'error' %}
+            /* Alerta Gigante ROJA para Días Duplicados */
+            Swal.fire({
+                title: '¡Fechas Duplicadas!',
+                text: '{{ message }}',
+                icon: 'error',
+                confirmButtonText: 'Entendido',
+                confirmButtonColor: '#dc3545',
                 backdrop: `rgba(0,0,0,0.6)`
             });
 
