@@ -395,22 +395,14 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // 1. CÁLCULO DEL RANGO (Lunes a Domingo de esta semana)
+            // 1. CÁLCULO DE DÍAS POR DEFECTO (Lunes a Viernes de esta semana)
+            // Esto solo sirve para que aparezcan marcados al abrir, pero no bloquea el resto
             const hoy = new Date();
-            const diaSemana = hoy.getDay(); // 0=Dom, 1=Lun...
-
-            // Calcular el Lunes
+            const diaSemana = hoy.getDay();
             const lunes = new Date(hoy);
             const diffLunes = diaSemana === 0 ? -6 : 1 - diaSemana;
             lunes.setDate(hoy.getDate() + diffLunes);
-            lunes.setHours(0, 0, 0, 0);
 
-            // Calcular el Domingo (Lunes + 6 días)
-            const domingo = new Date(lunes);
-            domingo.setDate(lunes.getDate() + 6);
-            domingo.setHours(23, 59, 59, 999);
-
-            // 2. CREAR ARREGLO DE DÍAS POR DEFECTO (Dejamos Lunes a Viernes preseleccionados por comodidad)
             const diasPorDefecto = [];
             for (let i = 0; i < 5; i++) {
                 let d = new Date(lunes);
@@ -418,18 +410,17 @@
                 diasPorDefecto.push(d);
             }
 
-            // 3. INICIALIZAR FLATPICKR
+            // 2. INICIALIZAR FLATPICKR SIN RESTRICCIONES
             flatpickr("#datepicker", {
                 mode: "multiple",
                 dateFormat: "d/m/Y",
                 locale: "es",
                 conjunction: " | ",
-                minDate: lunes,    // Restringir desde el Lunes
-                maxDate: domingo,  // AHORA PERMITE HASTA EL DOMINGO
-                defaultDate: diasPorDefecto, // PRE-SELECCIONAR LUNES A VIERNES
-                disableMobile: "true",
+                // minDate: lunes,    <-- ELIMINADO para habilitar fechas pasadas
+                // maxDate: domingo,  <-- ELIMINADO para habilitar fechas futuras
+                defaultDate: diasPorDefecto,
+                disableMobile: true,
 
-                // Cada vez que cambie, actualizamos el texto
                 onChange: function (selectedDates, dateStr, instance) {
                     if (selectedDates.length === 0) {
                         instance.input.placeholder = "Ningún día seleccionado";
@@ -438,9 +429,10 @@
                     }
                 },
 
-                // Al cargar por primera vez
                 onReady: function (selectedDates, dateStr, instance) {
-                    instance.input.placeholder = selectedDates.length + " días seleccionados";
+                    if (selectedDates.length > 0) {
+                        instance.input.placeholder = selectedDates.length + " días seleccionados";
+                    }
                 }
             });
         });
