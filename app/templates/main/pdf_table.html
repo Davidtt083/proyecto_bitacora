@@ -45,7 +45,7 @@
     <table>
         <thead>
             <tr>
-                <th style="width: 5%;">Fecha</th>
+                <th style="width: 5%;">Periodo semanal</th>
                 <th style="width: 9%;">Nombre</th>
                 <th style="width: 7%;">Empresa</th>
                 <th style="width: 7%;">Puesto</th>
@@ -62,7 +62,7 @@
         <tbody>
             {% for r in reportes %}
             <tr>
-                <td class="text-center">{{ r.timestamp.strftime('%d/%m/%Y') }}</td>
+                <td class="text-center" style="font-weight: bold; color: #333;">{{ r.rango_periodo }}</td>
                 <td><strong>{{ r.nombre_completo }}</strong></td>
                 <td>{{ r.empresa }}</td>
                 <td>{{ r.puesto }}</td>

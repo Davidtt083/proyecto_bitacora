@@ -147,6 +147,18 @@ def admin_dashboard():
     meses_lista = sorted(list(meses_set), reverse=True)
     meses_opciones = [(m, obtener_nombre_mes(m)) for m in meses_lista]
 
+    for r in reportes:
+        if r.periodo_semanal:
+            dias_lista = [d.strip() for d in r.periodo_semanal.split('|') if d.strip()]
+            if len(dias_lista) > 1:
+                r.rango_periodo = f"{dias_lista[0][:5]} al {dias_lista[-1][:5]}"
+            elif len(dias_lista) == 1:
+                r.rango_periodo = dias_lista[0][:5]
+            else:
+                r.rango_periodo = "-"
+        else:
+            r.rango_periodo = "-"
+
     return render_template('main/admin_dashboard.html', 
                            title='Panel Admin', 
                            reportes=reportes,
@@ -450,9 +462,20 @@ def export_table_pdf():
     # Contar los días laborados para mostrarlos en la tabla
     for r in reportes:
         if r.periodo_semanal:
-            r.dias_contados = len([d for d in r.periodo_semanal.split('|') if d.strip()])
+            dias_lista = [d.strip() for d in r.periodo_semanal.split('|') if d.strip()]
+            r.dias_contados = len(dias_lista)
+            
+            # --- NUEVO: Extraemos la primera y última fecha (ej: "12/03 al 16/03") ---
+            if len(dias_lista) > 1:
+                # El [:5] corta el texto para tomar solo Día y Mes, ahorrando espacio en el PDF
+                r.rango_periodo = f"{dias_lista[0][:5]} al {dias_lista[-1][:5]}"
+            elif len(dias_lista) == 1:
+                r.rango_periodo = dias_lista[0][:5]
+            else:
+                r.rango_periodo = "-"
         else:
             r.dias_contados = 0
+            r.rango_periodo = "-"
 
     # Renderizar HTML a PDF
     html = render_template('main/pdf_table.html', reportes=reportes)
