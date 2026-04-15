@@ -15,16 +15,25 @@
         }
         h2 {
             text-align: center;
-            margin-bottom: 15px;
+            margin-top: 0; /* Quitamos margen superior para ganar espacio */
+            margin-bottom: 10px;
             color: #5a5a5a;
         }
+        
+        /* --- AJUSTES PARA EVITAR HOJAS EN BLANCO --- */
         table {
             width: 100%;
             border-collapse: collapse;
+            page-break-inside: auto;
         }
+        tr {
+            page-break-inside: avoid; /* Evita que una fila se corte horizontalmente */
+            page-break-after: auto;
+        }
+        
         th, td {
             border: 1px solid #666;
-            padding: 5px;
+            padding: 4px; /* Redujimos el padding para ahorrar altura */
             text-align: left;
             vertical-align: top;
             word-wrap: break-word;
@@ -42,10 +51,11 @@
 
     <h2>Reporte de Bitácoras (Vista de Tabla)</h2>
 
+    <!-- EL ATRIBUTO repeat="1" OBLIGA AL PDF A REPETIR LOS TÍTULOS SI SALTA DE HOJA -->
     <table>
-        <thead>
+        <thead repeat="1">
             <tr>
-                <th style="width: 5%;">Periodo semanal</th>
+                <th style="width: 6%;">Periodo semanal</th>
                 <th style="width: 9%;">Nombre</th>
                 <th style="width: 7%;">Empresa</th>
                 <th style="width: 7%;">Puesto</th>
@@ -55,7 +65,7 @@
                 <th style="width: 5%;">Status</th>
                 <th style="width: 19%;">Actividades</th>
                 <th style="width: 9%;">Herramientas</th>
-                <th style="width: 9%;">Entregable / Medio</th>
+                <th style="width: 8%;">Entregable / Medio</th>
                 <th style="width: 8%;">Incidencias</th>
             </tr>
         </thead>
