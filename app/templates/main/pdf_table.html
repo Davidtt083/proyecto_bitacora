@@ -10,30 +10,28 @@
         }
         body {
             font-family: Helvetica, Arial, sans-serif;
-            font-size: 8px; /* Letra pequeña para que quepan todas las columnas */
+            font-size: 8px; 
             color: #333;
         }
         h2 {
             text-align: center;
-            margin-top: 0; /* Quitamos margen superior para ganar espacio */
+            margin-top: 0; 
             margin-bottom: 10px;
             color: #5a5a5a;
         }
         
-        /* --- AJUSTES PARA EVITAR HOJAS EN BLANCO --- */
         table {
             width: 100%;
             border-collapse: collapse;
-            page-break-inside: auto;
         }
+        /* Dejamos que el sistema decida libremente cómo cortar las filas */
         tr {
-            page-break-inside: avoid; /* Evita que una fila se corte horizontalmente */
-            page-break-after: auto;
+            page-break-inside: auto; 
         }
         
         th, td {
             border: 1px solid #666;
-            padding: 4px; /* Redujimos el padding para ahorrar altura */
+            padding: 4px; 
             text-align: left;
             vertical-align: top;
             word-wrap: break-word;
@@ -45,17 +43,23 @@
             text-align: center;
         }
         .text-center { text-align: center; }
+        
+        /* Hacemos la letra un poco más pequeña solo para textos muy largos */
+        .texto-largo {
+            font-size: 7.5px;
+            line-height: 1.2;
+            text-align: justify;
+        }
     </style>
 </head>
 <body>
 
     <h2>Reporte de Bitácoras (Vista de Tabla)</h2>
 
-    <!-- EL ATRIBUTO repeat="1" OBLIGA AL PDF A REPETIR LOS TÍTULOS SI SALTA DE HOJA -->
     <table>
         <thead repeat="1">
             <tr>
-                <th style="width: 6%;">Periodo semanal</th>
+                <th style="width: 6%;">Periodo</th>
                 <th style="width: 9%;">Nombre</th>
                 <th style="width: 7%;">Empresa</th>
                 <th style="width: 7%;">Puesto</th>
@@ -80,10 +84,15 @@
                 <td>{{ r.nombre_jefe_inmediato }}<br><span style="color: #555;">{{ r.cargo_jefe_inmediato }}</span></td>
                 <td>{{ r.proyecto_actual }}</td>
                 <td class="text-center">{{ r.status }}</td>
-                <td>{{ r.actividades }}</td>
-                <td>{{ r.herramientas_utilizadas or '-' }}</td>
+                
+                <!-- AQUÍ ESTÁ LA MAGIA: Si el texto tiene más de 300 caracteres, lo corta. Si no, lo muestra completo -->
+                <td class="texto-largo">
+                    {{ r.actividades[:300] + '...' if r.actividades|length > 300 else r.actividades }}
+                </td>
+                
+                <td class="texto-largo">{{ r.herramientas_utilizadas or '-' }}</td>
                 <td>{{ r.entregable_generado or '-' }}<br><span style="color: #555;">{{ r.medio_entregable or '' }}</span></td>
-                <td>{{ r.incidencias or 'Ninguna' }}</td>
+                <td class="texto-largo">{{ r.incidencias or 'Ninguna' }}</td>
             </tr>
             {% endfor %}
             
