@@ -91,13 +91,13 @@
                 </td>
                 
                 <td class="texto-largo">{{ r.herramientas_utilizadas or '-' }}</td>
-                <td class="texto-largo">
-                    <!-- Corta el nombre del entregable si es muy largo -->
-                    {{ (r.entregable_generado[:40] + '...') if r.entregable_generado and r.entregable_generado|length > 40 else (r.entregable_generado or '-') }}
+                <td class="texto-largo" style="word-break: break-all;">
+                    <!-- Corta el nombre del entregable a 20 caracteres -->
+                    {{ (r.entregable_generado[:20] + '...') if r.entregable_generado and r.entregable_generado|length > 20 else (r.entregable_generado or '-') }}
                     <br>
-                    <!-- Corta el Link (URL) si pasa de 45 caracteres -->
+                    <!-- Corta el Link (URL) a 25 caracteres máximo para que quepa a la fuerza -->
                     <span style="color: #555;">
-                        {{ (r.medio_entregable[:45] + '...') if r.medio_entregable and r.medio_entregable|length > 45 else (r.medio_entregable or '') }}
+                        {{ (r.medio_entregable[:25] + '...') if r.medio_entregable and r.medio_entregable|length > 25 else (r.medio_entregable or '') }}
                     </span>
                 </td>
                 <td class="texto-largo">{{ r.incidencias or 'Ninguna' }}</td>
