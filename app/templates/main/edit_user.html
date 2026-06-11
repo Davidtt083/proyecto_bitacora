@@ -5,30 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ title }}</title>
     <style>
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            background-color: #f4f7f9;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-        }
-        .container {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 500px;
-        }
-        h2 { text-align: center; color: #333; margin-bottom: 20px; }
-        .form-group { display: flex; flex-direction: column; margin-bottom: 15px; }
-        label { font-weight: 600; margin-bottom: 5px; font-size: 14px; color: #555; }
-        input, select { padding: 10px; border: 1.5px solid #ddd; border-radius: 8px; font-size: 15px; }
-        .btn-submit { background: #28a745; color: white; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px;}
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f4f7f9; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px;}
+        .container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); width: 100%; max-width: 500px; }
+        h2 { text-align: center; color: #333; margin-top: 0; margin-bottom: 20px; }
+        .form-group { display: flex; flex-direction: column; margin-bottom: 12px; }
+        label { font-weight: 600; margin-bottom: 5px; font-size: 13px; color: #555; }
+        input, select { padding: 10px; border: 1.5px solid #ddd; border-radius: 8px; font-size: 14px; }
+        .btn-submit { background: #007bff; color: white; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 15px; font-size: 15px;}
         .btn-back { display: block; text-align: center; margin-top: 15px; color: #5a5a5a; text-decoration: none; font-weight: bold; }
-        .alert { padding: 10px; border-radius: 8px; margin-bottom: 15px; background: #f8d7da; color: #721c24; }
+        .error-msg { color: #dc3545; font-size: 12px; margin-top: 4px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -39,42 +24,35 @@
         <form method="POST">
             {{ form.hidden_tag() }}
             
-            <div class="form-group">
-                {{ form.nombre.label }} {{ form.nombre() }}
-            </div>
+            <div class="form-group">{{ form.nombre.label }} {{ form.nombre() }}</div>
+            <div class="form-group">{{ form.email.label }} {{ form.email() }}</div>
+            <div class="form-group">{{ form.telefono.label }} {{ form.telefono() }}</div>
+            <div class="form-group">{{ form.empresa.label }} {{ form.empresa() }}</div>
+            <div class="form-group">{{ form.empresa_origen.label }} {{ form.empresa_origen() }}</div>
+            <div class="form-group">{{ form.puesto.label }} {{ form.puesto() }}</div>
+            <div class="form-group">{{ form.jefe_directo.label }} {{ form.jefe_directo() }}</div>
+            <div class="form-group">{{ form.rol.label }} {{ form.rol() }}</div>
             
-            <div class="form-group">
-                {{ form.email.label }} {{ form.email() }}
-            </div>
+            <div class="form-group">{{ form.status.label }} {{ form.status() }}</div>
+
+            <!-- SECCIÓN DE CONTRASEÑAS -->
+            <hr style="border: 0.5px solid #eee; margin: 20px 0;">
+            <h4 style="margin-top: 0; margin-bottom: 10px; color: #666;">Seguridad (Contraseña)</h4>
 
             <div class="form-group">
-                {{ form.telefono.label }} {{ form.telefono() }}
+                {{ form.password.label }} {{ form.password(placeholder="Dejar en blanco para conservar la actual") }}
+                {% for error in form.password.errors %}<span class="error-msg">{{ error }}</span>{% endfor %}
             </div>
-            
             <div class="form-group">
-                {{ form.empresa.label }} {{ form.empresa() }}
-            </div>
-
-            <div class="form-group">
-                {{ form.empresa_origen.label }} {{ form.empresa_origen() }}
-            </div>
-            
-            <div class="form-group">
-                {{ form.puesto.label }} {{ form.puesto() }}
-            </div>
-            
-             <div class="form-group">
-                {{ form.jefe_directo.label }} {{ form.jefe_directo() }}
-            </div>
-            
-            <div class="form-group">
-                {{ form.status.label }} {{ form.status() }}
+                {{ form.password_confirm.label }} {{ form.password_confirm() }}
+                {% for error in form.password_confirm.errors %}<span class="error-msg">{{ error }}</span>{% endfor %}
             </div>
 
             {{ form.submit(class="btn-submit") }}
         </form>
 
-        <a href="{{ url_for('main.admin_dashboard') }}" class="btn-back">← Volver al <i>dashboard</i></a>
+        <!-- Botón para regresar a la tabla de usuarios -->
+        <a href="{{ url_for('main.users_list') }}" class="btn-back">← Volver a la lista de usuarios</a>
     </div>
 
 </body>

@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, TextAreaField, SubmitField, SelectField
-from wtforms.validators import DataRequired, Email, Optional, URL, Length
+from wtforms import StringField, TextAreaField, SubmitField, SelectField, PasswordField
+from wtforms.validators import DataRequired, Email, Optional, URL, Length, EqualTo
 
 class BitacoraForm(FlaskForm):
     nombre_completo = StringField('Nombre completo', validators=[DataRequired(), Length(max=100)])
@@ -41,18 +41,29 @@ class EditUserAdminForm(FlaskForm):
         ('Empresa B', 'Empresa B'),
         ('Empresa C', 'Empresa C'),
         ('Empresa D', 'Empresa D'),
-        ('Independiente', 'Trabajador independiente')
+        ('Independiente', 'Trabajador Independiente')
     ], validators=[DataRequired()])
     empresa_origen = SelectField('Empresa origen', choices=[
         ('Krolls', 'Krolls'),
         ('PROGREDI', 'PROGREDI'),
     ], validators=[DataRequired()])
     puesto = StringField('Puesto / cargo', validators=[DataRequired()])
-    jefe_directo = StringField('A quién reporta (jefe directo)', validators=[DataRequired()])    
+    jefe_directo = StringField('A quién reporta (Jefe directo)', validators=[DataRequired()])
+    
+    rol = SelectField('Rol en el sistema', choices=[
+        ('usuario', 'Consultor / empleado (normal)'),
+        ('cliente', 'Cliente (solo ve su empresa)'),
+        ('admin', 'Administrador maestro')
+    ], validators=[DataRequired()])
+    
     status = SelectField('Estado del usuario', choices=[
         ('1', 'Vigente'),
         ('0', 'No vigente')
     ], validators=[DataRequired()])
+    
+    # --- NUEVOS CAMPOS DE CONTRASEÑA ---
+    password = PasswordField('Nueva contraseña (Dejar en blanco para NO cambiarla)', validators=[Optional()])
+    password_confirm = PasswordField('Confirmar nueva contraseña', validators=[EqualTo('password', message='Las contraseñas no coinciden')])
     
     submit = SubmitField('Actualizar usuario')
 

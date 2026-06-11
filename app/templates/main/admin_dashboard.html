@@ -207,193 +207,194 @@
     <div class="container-fluid">
         <div class="header-admin">
             <h2>Panel maestro de bitácoras</h2>
-            <a href="{{ url_for('main.index') }}" class="btn btn-back">← Volver al registro</a>
+           <!-- <a href="{{ url_for('main.index') }}" class="btn btn-back">← Volver al registro</a>-->
         </div>
+        <a href="{{ url_for('main.users_list') }}" class="btn"
+            style="background: #007bff; color: white; margin-right: 10px;">Gestión de usuarios</a>
+        <a href="{{ url_for('main.index') }}" class="btn btn-back">← Volver al registro</a>
+    </div>
+    </div>
 
+    <!-- FILTROS -->
+    <div class="filters-card"
+        style="background: white; padding: 20px; border-radius: 12px; margin-bottom: 25px; border: 1px solid #e0e6ed;">
+        <form action="{{ url_for('main.admin_dashboard') }}" method="GET">
+            <div style="display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-end;">
 
-        <!-- FILTROS -->
-        <div class="filters-card"
-            style="background: white; padding: 20px; border-radius: 12px; margin-bottom: 25px; border: 1px solid #e0e6ed;">
-            <form action="{{ url_for('main.admin_dashboard') }}" method="GET">
-                <div style="display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-end;">
-
-                    <div style="flex: 2; min-width: 150px; display: flex; flex-direction: column;">
-                        <label style="font-size: 11px; font-weight: bold; color: #666; margin-bottom: 5px;">Búsqueda
-                            libre</label>
-                        <input type="text" name="q"
-                            style="padding: 10px; border-radius: 8px; border: 1px solid #dcdfe6;"
-                            placeholder="Nombre, empresa, jefe, proyecto..." value="{{ search_query }}">
-                    </div>
-
-                    <!-- NUEVO FILTRO DE MES -->
-                    <div style="flex: 1; min-width: 120px; display: flex; flex-direction: column;">
-                        <label style="font-size: 11px; font-weight: bold; color: #666; margin-bottom: 5px;">Mes</label>
-                        <select name="mes" onchange="this.form.submit()"
-                            style="padding: 10px; border-radius: 8px; border: 1px solid #dcdfe6;">
-                            <option value="">Todos los meses</option>
-                            {% for val, label in meses_opciones %}
-                            <option value="{{ val }}" {{ 'selected' if val==mes_filter }}>{{ label }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-
-                    <div style="flex: 1; min-width: 120px; display: flex; flex-direction: column;">
-                        <label
-                            style="font-size: 11px; font-weight: bold; color: #666; margin-bottom: 5px;">Empresa</label>
-                        <select name="empresa" onchange="this.form.submit()"
-                            style="padding: 10px; border-radius: 8px; border: 1px solid #dcdfe6;">
-                            <option value="">Todas</option>
-                            {% for e in empresas %}
-                            <option value="{{ e }}" {{ 'selected' if e==empresa_filter }}>{{ e }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-
-                    <div style="flex: 1; min-width: 120px; display: flex; flex-direction: column;">
-                        <label
-                            style="font-size: 11px; font-weight: bold; color: #666; margin-bottom: 5px;">Estatus</label>
-                        <select name="status" onchange="this.form.submit()"
-                            style="padding: 10px; border-radius: 8px; border: 1px solid #dcdfe6;">
-                            <option value="">Todos</option>
-                            <option value="En proceso" {{ 'selected' if status_filter=='En proceso' }}>En proceso
-                            </option>
-                            <option value="Finalizado" {{ 'selected' if status_filter=='Finalizado' }}>Finalizado
-                            </option>
-                        </select>
-                    </div>
-
-                    <div style="display: flex; gap: 10px; margin-top: 10px;">
-                        <button type="submit" class="btn btn-search">Aplicar</button>
-
-                        <!-- Mostramos Limpiar solo si hay algún filtro activo -->
-                        {% if search_query or empresa_filter or status_filter or mes_filter %}
-                        <a href="{{ url_for('main.admin_dashboard') }}" class="btn btn-clear">Limpiar</a>
-                        {% endif %}
-
-                        <!-- Botón PDF actualizado para enviar también el mes_filter -->
-                        <button type="button" class="btn" style="background: #dc3545; color: white;"
-                            onclick="openPdfModal()">
-                            📄 Generar informe PDF
-                        </button>
-                        <button type="button" class="btn" style="background: #dc3545; color: white;"
-                            onclick="descargarTablaPdf()">
-                            📄 Descargar vista actual (PDF)
-                        </button>
-                    </div>
+                <div style="flex: 2; min-width: 150px; display: flex; flex-direction: column;">
+                    <label style="font-size: 11px; font-weight: bold; color: #666; margin-bottom: 5px;">Búsqueda
+                        libre</label>
+                    <input type="text" name="q" style="padding: 10px; border-radius: 8px; border: 1px solid #dcdfe6;"
+                        placeholder="Nombre, empresa, jefe, proyecto..." value="{{ search_query }}">
                 </div>
-            </form>
-        </div>
 
-        <div class="table-responsive">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Periodo semanal</th>
-                        <th>Nombre</th>
-                        <th>Estado usuario</th>
-                        <th>Empresa</th>
-                        <th>Puesto</th>
-                        <th style="text-align: center;">Días laborados</th>
-                        <th>Jefe directo</th>
-                        <th>Cargo jefe</th>
-                        <th>Proyecto</th>
-                        <th style="text-align: center;">Estatus</th>
-                        <th class="col-text">Actividades</th>
-                        <th>Herramientas</th>
-                        <th>Entregable</th>
-                        <th class="col-text">Medio</th>
-                        <th class="col-text">Incidencias</th>
-                        <th style="text-align: center; min-width: 150px;">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for reporte in reportes %}
-                    <tr>
-                        <!-- REGRESA A TEXTO NORMAL -->
-                        <td>
-                            <span style="font-weight: bold; color: #0056b3;">{{ reporte.rango_periodo }}</span><br>
-                            <!--<span style="font-size: 10px; color: #999;">Reg: {{ reporte.timestamp.strftime('%d/%m/%Y')
+                <!-- NUEVO FILTRO DE MES -->
+                <div style="flex: 1; min-width: 120px; display: flex; flex-direction: column;">
+                    <label style="font-size: 11px; font-weight: bold; color: #666; margin-bottom: 5px;">Mes</label>
+                    <select name="mes" onchange="this.form.submit()"
+                        style="padding: 10px; border-radius: 8px; border: 1px solid #dcdfe6;">
+                        <option value="">Todos los meses</option>
+                        {% for val, label in meses_opciones %}
+                        <option value="{{ val }}" {{ 'selected' if val==mes_filter }}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div style="flex: 1; min-width: 120px; display: flex; flex-direction: column;">
+                    <label style="font-size: 11px; font-weight: bold; color: #666; margin-bottom: 5px;">Empresa</label>
+                    <select name="empresa" onchange="this.form.submit()"
+                        style="padding: 10px; border-radius: 8px; border: 1px solid #dcdfe6;">
+                        <option value="">Todas</option>
+                        {% for e in empresas %}
+                        <option value="{{ e }}" {{ 'selected' if e==empresa_filter }}>{{ e }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div style="flex: 1; min-width: 120px; display: flex; flex-direction: column;">
+                    <label style="font-size: 11px; font-weight: bold; color: #666; margin-bottom: 5px;">Estatus</label>
+                    <select name="status" onchange="this.form.submit()"
+                        style="padding: 10px; border-radius: 8px; border: 1px solid #dcdfe6;">
+                        <option value="">Todos</option>
+                        <option value="En proceso" {{ 'selected' if status_filter=='En proceso' }}>En proceso
+                        </option>
+                        <option value="Finalizado" {{ 'selected' if status_filter=='Finalizado' }}>Finalizado
+                        </option>
+                    </select>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <button type="submit" class="btn btn-search">Aplicar</button>
+
+                    <!-- Mostramos Limpiar solo si hay algún filtro activo -->
+                    {% if search_query or empresa_filter or status_filter or mes_filter %}
+                    <a href="{{ url_for('main.admin_dashboard') }}" class="btn btn-clear">Limpiar</a>
+                    {% endif %}
+
+                    <!-- Botón PDF actualizado para enviar también el mes_filter -->
+                    <button type="button" class="btn" style="background: #dc3545; color: white;"
+                        onclick="openPdfModal()">
+                        📄 Generar informe PDF
+                    </button>
+                    <button type="button" class="btn" style="background: #dc3545; color: white;"
+                        onclick="descargarTablaPdf()">
+                        📄 Descargar vista actual (PDF)
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>Periodo semanal</th>
+                    <th>Nombre</th>
+                    <th>Estado usuario</th>
+                    <th>Empresa</th>
+                    <th>Puesto</th>
+                    <th style="text-align: center;">Días laborados</th>
+                    <th>Jefe directo</th>
+                    <th>Cargo jefe</th>
+                    <th>Proyecto</th>
+                    <th style="text-align: center;">Estatus</th>
+                    <th class="col-text">Actividades</th>
+                    <th>Herramientas</th>
+                    <th>Entregable</th>
+                    <th class="col-text">Medio</th>
+                    <th class="col-text">Incidencias</th>
+                    <th style="text-align: center; min-width: 150px;">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for reporte in reportes %}
+                <tr>
+                    <!-- REGRESA A TEXTO NORMAL -->
+                    <td>
+                        <span style="font-weight: bold; color: #0056b3;">{{ reporte.rango_periodo }}</span><br>
+                        <!--<span style="font-size: 10px; color: #999;">Reg: {{ reporte.timestamp.strftime('%d/%m/%Y')
                                 }}</span>-->
-                        </td>
-                        <td> <strong>{{ reporte.nombre_completo }}</strong><br>
+                    </td>
+                    <td> <strong>{{ reporte.nombre_completo }}</strong><br>
 
-                        </td>
-                        <td style="text-align: center;">
-                            {% if reporte.autor.activo %}
-                            <span style="color: #28a745; font-weight: bold;">● Vigente</span>
-                            {% else %}
-                            <span style="color: #dc3545; font-weight: bold;">● No vigente</span>
-                            {% endif %}
-                        </td>
-                        <td>{{ reporte.empresa }}</td>
-                        <td>{{ reporte.puesto }}</td>
+                    </td>
+                    <td style="text-align: center;">
+                        {% if reporte.autor.activo %}
+                        <span style="color: #28a745; font-weight: bold;">● Vigente</span>
+                        {% else %}
+                        <span style="color: #dc3545; font-weight: bold;">● No vigente</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ reporte.empresa }}</td>
+                    <td>{{ reporte.puesto }}</td>
 
-                        <td style="text-align: center;">
-                            {% if reporte.periodo_semanal %}
-                            <button class="view-dates-btn"
-                                onclick="openDatesModal('{{ reporte.periodo_semanal }}', '{{ reporte.nombre_completo }}')">
-                                {{ reporte.periodo_semanal.split(' | ')|length }} días
-                            </button>
-                            {% else %} - {% endif %}
-                        </td>
+                    <td style="text-align: center;">
+                        {% if reporte.periodo_semanal %}
+                        <button class="view-dates-btn"
+                            onclick="openDatesModal('{{ reporte.periodo_semanal }}', '{{ reporte.nombre_completo }}')">
+                            {{ reporte.periodo_semanal.split(' | ')|length }} días
+                        </button>
+                        {% else %} - {% endif %}
+                    </td>
 
-                        <td>{{ reporte.nombre_jefe_inmediato }}</td>
-                        <td>{{ reporte.cargo_jefe_inmediato }}</td>
-                        <td>{{ reporte.proyecto_actual }}</td>
+                    <td>{{ reporte.nombre_jefe_inmediato }}</td>
+                    <td>{{ reporte.cargo_jefe_inmediato }}</td>
+                    <td>{{ reporte.proyecto_actual }}</td>
 
-                        <!-- STATUS EN CÁPSULA CORREGIDO -->
-                        <td style="text-align: center;">
-                            <span
-                                class="badge {{ 'badge-finalizado' if reporte.status == 'Finalizado' else 'badge-proceso' }}">
-                                {{ reporte.status }}
-                            </span>
-                        </td>
+                    <!-- STATUS EN CÁPSULA CORREGIDO -->
+                    <td style="text-align: center;">
+                        <span
+                            class="badge {{ 'badge-finalizado' if reporte.status == 'Finalizado' else 'badge-proceso' }}">
+                            {{ reporte.status }}
+                        </span>
+                    </td>
 
-                        <td class="col-text">{{ reporte.actividades }}</td>
-                        <td>{{ reporte.herramientas_utilizadas or '-' }}</td>
-                        <td>{{ reporte.entregable_generado or '-' }}</td>
-                        <td class="col-text">{{ reporte.medio_entregable or '-' }}</td>
-                        <td class="col-text" style="color: var(--danger);">{{ reporte.incidencias or 'Ninguna' }}</td>
-                        <td style="text-align: center;">
-                            <div style="display: flex; flex-direction: column; gap: 6px;">
-                                <!-- Editar Usuario -->
-                                <a href="{{ url_for('main.edit_user', user_id=reporte.autor.id) }}" class="btn"
-                                    style="background: #040404; color: white; padding: 6px; font-size: 11px;">
-                                    Editar usuario
-                                </a>
+                    <td class="col-text">{{ reporte.actividades }}</td>
+                    <td>{{ reporte.herramientas_utilizadas or '-' }}</td>
+                    <td>{{ reporte.entregable_generado or '-' }}</td>
+                    <td class="col-text">{{ reporte.medio_entregable or '-' }}</td>
+                    <td class="col-text" style="color: var(--danger);">{{ reporte.incidencias or 'Ninguna' }}</td>
+                    <td style="text-align: center;">
+                        <div style="display: flex; flex-direction: column; gap: 6px;">
+                            <!-- Editar Usuario -->
+                            <a href="{{ url_for('main.edit_user', user_id=reporte.autor.id) }}" class="btn"
+                                style="background: #040404; color: white; padding: 6px; font-size: 11px;">
+                                Editar usuario
+                            </a>
 
-                                <!-- Eliminar Usuario -->
-                                <form action="{{ url_for('main.delete_user', user_id=reporte.autor.id) }}" method="POST"
-                                    style="margin: 0;"
-                                    onsubmit="return confirm('ATENCIÓN: ¿Estás seguro de eliminar a {{ reporte.autor.nombre }}? Esto borrará su cuenta y TODOS sus reportes.');">
-                                    <button type="submit" class="btn"
-                                        style="background: #dc3545; color: white; padding: 6px; font-size: 11px; width: 100%;">
-                                        Borrar usuario
-                                    </button>
-                                </form>
+                            <!-- Eliminar Usuario -->
+                            <form action="{{ url_for('main.delete_user', user_id=reporte.autor.id) }}" method="POST"
+                                style="margin: 0;"
+                                onsubmit="return confirm('ATENCIÓN: ¿Estás seguro de eliminar a {{ reporte.autor.nombre }}? Esto borrará su cuenta y TODOS sus reportes.');">
+                                <button type="submit" class="btn"
+                                    style="background: #dc3545; color: white; padding: 6px; font-size: 11px; width: 100%;">
+                                    Borrar usuario
+                                </button>
+                            </form>
 
-                                <hr style="width: 100%; border: 0.5px solid #eee; margin: 2px 0;">
+                            <hr style="width: 100%; border: 0.5px solid #eee; margin: 2px 0;">
 
-                                <a href="{{ url_for('main.edit_report', report_id=reporte.id) }}" class="btn"
-                                    style="background: #17a2b8; color: white; padding: 6px; font-size: 11px; width: 100%; box-sizing: border-box; text-align: center; margin-bottom: 4px;">
-                                    Editar fila
-                                </a>
+                            <a href="{{ url_for('main.edit_report', report_id=reporte.id) }}" class="btn"
+                                style="background: #17a2b8; color: white; padding: 6px; font-size: 11px; width: 100%; box-sizing: border-box; text-align: center; margin-bottom: 4px;">
+                                Editar fila
+                            </a>
 
-                                <!-- Eliminar solo este reporte -->
-                                <form action="{{ url_for('main.delete_report', report_id=reporte.id) }}" method="POST"
-                                    style="margin: 0;" onsubmit="return confirm('¿Borrar solo este reporte?');">
-                                    <button type="submit" class="btn"
-                                        style="background: #6c757d; color: white; padding: 6px; font-size: 11px; width: 100%;">
-                                        Borrar fila
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+                            <!-- Eliminar solo este reporte -->
+                            <form action="{{ url_for('main.delete_report', report_id=reporte.id) }}" method="POST"
+                                style="margin: 0;" onsubmit="return confirm('¿Borrar solo este reporte?');">
+                                <button type="submit" class="btn"
+                                    style="background: #6c757d; color: white; padding: 6px; font-size: 11px; width: 100%;">
+                                    Borrar fila
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
     </div>
 
     <!-- MODAL -->

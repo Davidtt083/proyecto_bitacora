@@ -223,6 +223,17 @@ def cliente_dashboard():
                            title='Panel Cliente', 
                            reportes=reportes)
 
+
+@bp.route('/admin/usuarios')
+@login_required
+def users_list():
+    if current_user.rol != 'admin':
+        abort(403)
+    # Traemos a todos los usuarios ordenados alfabéticamente
+    usuarios = User.query.order_by(User.nombre).all()
+    return render_template('main/users_list.html', title='Gestión de Usuarios', usuarios=usuarios)
+
+
 @bp.route('/admin/usuario/<int:user_id>/editar', methods=['GET', 'POST'])
 @login_required
 def edit_user(user_id):
@@ -233,7 +244,6 @@ def edit_user(user_id):
     form = EditUserAdminForm()
 
     if form.validate_on_submit():
-        # 1. Actualizamos los datos del Perfil del Usuario
         user.nombre = form.nombre.data
         user.email = form.email.data
         user.telefono = form.telefono.data 
@@ -241,31 +251,32 @@ def edit_user(user_id):
         user.empresa_origen = form.empresa_origen.data
         user.puesto = form.puesto.data
         user.jefe_directo = form.jefe_directo.data
+        user.rol = form.rol.data
         user.activo = (form.status.data == '1')
         
-        # 2. NUEVO: Actualizamos TODOS los reportes anteriores de este usuario
-        # para que el dashboard muestre la información corregida inmediatamente.
+        # NUEVO: Si el admin escribió una contraseña, la encriptamos y la guardamos
+        if form.password.data:
+            user.set_password(form.password.data)
+            
         for reporte in user.bitacoras:
             reporte.nombre_completo = form.nombre.data
             reporte.empresa = form.empresa.data
             reporte.puesto = form.puesto.data
             reporte.nombre_jefe_inmediato = form.jefe_directo.data
             
-        # Guardamos todo en la base de datos
         db.session.commit()
-        
-        flash(f'Datos de {user.nombre} y todos sus reportes fueron actualizados correctamente.', 'success')
-        return redirect(url_for('main.admin_dashboard'))
+        flash(f'Usuario {user.nombre} actualizado correctamente.', 'success')
+        return redirect(url_for('main.users_list')) # Regresa a la lista de usuarios
 
     elif request.method == 'GET':
-        # Pre-llenar el formulario con los datos actuales
         form.nombre.data = user.nombre
         form.email.data = user.email
         form.telefono.data = user.telefono
         form.empresa.data = user.empresa
         form.empresa_origen.data = user.empresa_origen
         form.puesto.data = user.puesto
-        form.jefe_directo.data = user.jefe_directo 
+        form.jefe_directo.data = user.jefe_directo
+        form.rol.data = user.rol
         form.status.data = '1' if user.activo else '0'
 
     return render_template('main/edit_user.html', title='Editar Usuario', form=form, user=user)
