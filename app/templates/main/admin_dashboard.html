@@ -357,20 +357,20 @@
                     <td class="col-text" style="color: var(--danger);">{{ reporte.incidencias or 'Ninguna' }}</td>
                     <td style="text-align: center;">
                         <div style="display: flex; flex-direction: column; gap: 6px;">
-                            <!-- Editar Usuario -->
+                            <!-- Editar Usuario
                             <a href="{{ url_for('main.edit_user', user_id=reporte.autor.id) }}" class="btn"
                                 style="background: #040404; color: white; padding: 6px; font-size: 11px;">
                                 Editar usuario
                             </a>
 
-                            <!-- Eliminar Usuario -->
+                           
                             <form action="{{ url_for('main.delete_user', user_id=reporte.autor.id) }}" method="POST"
                                 style="margin: 0;"
                                 onsubmit="return confirm('ATENCIÓN: ¿Estás seguro de eliminar a {{ reporte.autor.nombre }}? Esto borrará su cuenta y TODOS sus reportes.');">
                                 <button type="submit" class="btn"
                                     style="background: #dc3545; color: white; padding: 6px; font-size: 11px; width: 100%;">
                                     Borrar usuario
-                                </button>
+                                </button> -->
                             </form>
 
                             <hr style="width: 100%; border: 0.5px solid #eee; margin: 2px 0;">

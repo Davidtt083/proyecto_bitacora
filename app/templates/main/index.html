@@ -268,7 +268,6 @@
             <div class="btn-group">
                 {% if current_user.rol == 'admin' %}
                 <a href="{{ url_for('main.admin_dashboard') }}" class="btn admin-btn">Panel admin</a>
-                <a href="{{ url_for('auth.register') }}" class="btn admin-btn">Registrar usuario</a>
                 {% endif %}
                 <a href="{{ url_for('auth.logout') }}" class="btn logout-btn">Cerrar sesión</a>
             </div>
