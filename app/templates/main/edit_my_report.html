@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <!-- Hoja de estilos de Flatpickr -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/material_blue.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: #f8fafc;
+            margin: 0;
+            padding: 30px 20px;
+            color: #1e293b;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* AMPLIAMOS EL PANEL HORIZONTALMENTE */
+        .container {
+            max-width: 1300px; 
+            width: 100%;
+        }
+
+        /* CABECERA COMPACTA */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 12px;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            margin: 0;
+            font-size: 1.6rem;
+            color: #0f172a;
+        }
+
+        /* DISTRIBUCIÓN HORIZONTAL */
+        .workspace {
+            display: grid;
+            grid-template-columns: 3fr 1fr;
+            gap: 20px;
+            align-items: start;
+        }
+
+        .card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        }
+
+        .card h3 {
+            margin-top: 0;
+            margin-bottom: 18px;
+            font-size: 1.1rem;
+            color: #0f172a;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 10px;
+        }
+
+        /* CUADRÍCULA DE 3 COLUMNAS */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px 18px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .span-2 {
+            grid-column: span 2;
+        }
+
+        label {
+            font-weight: 600;
+            margin-bottom: 4px;
+            font-size: 12px;
+            color: #475569;
+        }
+
+        input, select, textarea, .custom-trigger {
+            padding: 8px 12px;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 13.5px;
+            color: #1e293b;
+            box-sizing: border-box;
+            transition: all 0.2s;
+            height: 38px;
+        }
+
+        .readonly-field {
+            background-color: #e9ecef;
+            cursor: not-allowed;
+            color: #64748b;
+            border-color: #e2e8f0;
+        }
+
+        /* Botón de Calendario personalizado */
+        .custom-trigger {
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            width: 100%;
+            text-align: left;
+        }
+
+        .custom-trigger:focus {
+            border-color: #007bff;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+        }
+
+        .trigger-text {
+            font-weight: 600;
+        }
+
+        textarea {
+            height: 85px;
+            resize: vertical;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: #007bff;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+        }
+
+        /* COLUMNA DERECHA (ACCIONES) */
+        .action-column {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .action-card {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding: 20px;
+        }
+
+        .btn {
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            text-align: center;
+            font-size: 14.5px;
+        }
+
+        .btn-submit {
+            background-color: #17a2b8;
+            color: white;
+            width: 100%;
+        }
+
+        .btn-submit:hover {
+            background-color: #138496;
+        }
+
+        .btn-back {
+            background-color: #6c757d;
+            color: white;
+            width: 100%;
+        }
+
+        .btn-back:hover {
+            background-color: #5a6268;
+        }
+
+        /* MENSAJES DE ERROR */
+        .error-msg {
+            color: #ef4444;
+            font-size: 11px;
+            margin-top: 4px;
+            font-weight: bold;
+        }
+
+        @media (max-width: 1024px) {
+            .workspace {
+                grid-template-columns: 1fr;
+            }
+            .form-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .span-2 {
+                grid-column: span 1;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- CABECERA -->
+        <div class="header">
+            <h2>Editar bitácora</h2>
+        </div>
+
+        <form method="POST">
+            {{ form.hidden_tag() }}
+
+            <div class="workspace">
+                
+                <!-- COLUMNA IZQUIERDA: FORMULARIO -->
+                <div class="card">
+                    <h3>Datos del reporte</h3>
+                    
+                    <div class="form-grid">
+                        <!-- FILA 1: CAMPOS BLOQUEADOS -->
+                        <div class="form-group">
+                            {{ form.nombre_completo.label }}
+                            {{ form.nombre_completo(class="readonly-field", readonly=True) }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.empresa.label }}
+                            {{ form.empresa(class="readonly-field", disabled=True) }}
+                            <!-- Entrada oculta de respaldo para validar en WTForms -->
+                            <input type="hidden" name="empresa" value="{{ reporte.empresa }}">
+                        </div>
+                        <div class="form-group">
+                            {{ form.puesto.label }}
+                            {{ form.puesto(class="readonly-field", readonly=True) }}
+                        </div>
+
+                        <!-- FILA 2: CAMPOS BLOQUEADOS -->
+                        <div class="form-group">
+                            {{ form.nombre_jefe_inmediato.label }}
+                            {{ form.nombre_jefe_inmediato(class="readonly-field", readonly=True) }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.cargo_jefe_inmediato.label }}
+                            {{ form.cargo_jefe_inmediato(class="readonly-field", readonly=True) }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.proyecto_actual.label }}
+                            {{ form.proyecto_actual() }}
+                        </div>
+
+                        <!-- FILA 3: ENTRADA DE FECHA ESTILIZADA -->
+                        <div class="form-group">
+                            <label for="periodo_semanal">Fecha de la actividad</label>
+                            <div style="position: relative;">
+                                {{ form.periodo_semanal(id="periodo_semanal_picker", style="display: none;") }}
+                                <button type="button" id="calendar_trigger_btn" class="custom-trigger">
+                                    <span id="calendar_display_text" class="trigger-text">Cargando fecha...</span>
+                                    <svg style="width: 18px; height: 18px; fill: #007bff;" viewBox="0 0 24 24">
+                                        <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM9 14H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2zm-8 4H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2z"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            {{ form.herramientas_utilizadas.label }}
+                            {{ form.herramientas_utilizadas() }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.entregable_generado.label }}
+                            {{ form.entregable_generado() }}
+                        </div>
+
+                        <!-- FILA 4 -->
+                        <div class="form-group" id="medio-entregable-container">
+                            {{ form.medio_entregable.label }}
+                            {{ form.medio_entregable() }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.status.label }}
+                            {{ form.status(id="status-select") }}
+                        </div>
+                        <div class="form-group">
+                            <!-- Espacio simétrico -->
+                        </div>
+
+                        <!-- FILA 5: TEXTAREAS LADO A LADO -->
+                        <div class="form-group span-2">
+                            {{ form.actividades.label }}
+                            {{ form.actividades() }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.incidencias.label }}
+                            {{ form.incidencias() }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- COLUMNA DERECHA: ACCIONES -->
+                <div class="action-column">
+                    <div class="card action-card">
+                        {{ form.submit(class="btn btn-submit", value="Guardar cambios") }}
+                        <a href="{{ url_for('main.mis_bitacoras') }}" class="btn btn-back">← Cancelar y volver</a>
+                    </div>
+                </div>
+
+            </div>
+        </form>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/es.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <script>
+        // Inicializar Flatpickr apuntando al elemento oculto
+        const fp = flatpickr("#periodo_semanal_picker", {
+            mode: "single",       
+            dateFormat: "d/m/Y",
+            locale: "es",
+            maxDate: "today",     
+            disableMobile: true,
+            positionElement: document.getElementById("calendar_trigger_btn"),
+            onChange: function(selectedDates, dateStr, instance) {
+                actualizarTextoBoton(selectedDates);
+            },
+            onReady: function(selectedDates, dateStr, instance) {
+                actualizarTextoBoton(selectedDates);
+            }
+        });
+
+        function actualizarTextoBoton(selectedDates) {
+            const btnText = document.getElementById("calendar_display_text");
+            if (selectedDates.length === 0) {
+                btnText.innerText = "Ningún día seleccionado";
+                btnText.style.color = "#64748b";
+            } else {
+                btnText.innerText = "1 día (" + flatpickr.formatDate(selectedDates[0], "d/m/Y") + ")";
+                btnText.style.color = "#007bff";
+            }
+        }
+
+        document.getElementById("calendar_trigger_btn").addEventListener("click", function() {
+            fp.open();
+        });
+
+        // Mostrar u ocultar medio entregable según estatus
+        const statusSelect = document.getElementById('status-select');
+        const medioContainer = document.getElementById('medio-entregable-container');
+
+        function toggleMedioField() {
+            if (statusSelect.value === 'Finalizado') {
+                medioContainer.style.visibility = 'visible';
+            } else {
+                medioContainer.style.visibility = 'hidden';
+            }
+        }
+        toggleMedioField();
+        statusSelect.addEventListener('change', toggleMedioField);
+    </script>
+
+   <!-- NOTIFICACIONES SMART DE SWEETALERT2 -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            {% for category, message in messages %}
+            
+            {% if category == 'editado' %}
+            /* Alerta de éxito de 2 segundos que luego redirige al historial */
+            Swal.fire({
+                title: '¡Actualización Exitosa!',
+                text: '{{ message }}',
+                icon: 'success',
+                timer: 2000,
+                timerProgressBar: true,
+                showConfirmButton: false,
+                allowOutsideClick: false,
+                backdrop: `rgba(0,0,0,0.6)`
+            }).then(() => {
+                // Al expirar el tiempo, redirigimos dinámicamente al historial
+                window.location.href = "{{ url_for('main.mis_bitacoras') }}";
+            });
+            
+            {% elif category == 'error' %}
+            /* Alerta Gigante ROJA para Días Duplicados en Edición */
+            Swal.fire({
+                title: '¡Fecha Duplicada!',
+                text: '{{ message }}',
+                icon: 'error',
+                confirmButtonText: 'Entendido',
+                confirmButtonColor: '#dc3545',
+                backdrop: `rgba(0,0,0,0.6)`
+            });
+            {% endif %}
+
+            {% endfor %}
+        });
+    </script>
+    {% endif %}
+    {% endwith %}
+
+</body>
+</html>

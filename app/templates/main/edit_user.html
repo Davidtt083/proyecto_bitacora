@@ -5,55 +5,396 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ title }}</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f4f7f9; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px;}
-        .container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); width: 100%; max-width: 500px; }
-        h2 { text-align: center; color: #333; margin-top: 0; margin-bottom: 20px; }
-        .form-group { display: flex; flex-direction: column; margin-bottom: 12px; }
-        label { font-weight: 600; margin-bottom: 5px; font-size: 13px; color: #555; }
-        input, select { padding: 10px; border: 1.5px solid #ddd; border-radius: 8px; font-size: 14px; }
-        .btn-submit { background: #007bff; color: white; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 15px; font-size: 15px;}
-        .btn-back { display: block; text-align: center; margin-top: 15px; color: #5a5a5a; text-decoration: none; font-weight: bold; }
-        .error-msg { color: #dc3545; font-size: 12px; margin-top: 4px; font-weight: bold; }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: #f8fafc;
+            margin: 0;
+            padding: 40px 20px;
+            color: #1e293b;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 1000px;
+            width: 100%;
+        }
+
+        /* CABECERA */
+        .header {
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            margin: 0 0 6px 0;
+            font-size: 1.8rem;
+            color: #0f172a;
+        }
+
+        .header p {
+            margin: 0;
+            color: #64748b;
+            font-size: 0.95rem;
+        }
+
+        /* DISEÑO DE DOS COLUMNAS */
+        .workspace {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 25px;
+            align-items: start;
+        }
+
+        .card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        }
+
+        .card h2 {
+            margin-top: 0;
+            margin-bottom: 25px;
+            font-size: 1.15rem;
+            color: #0f172a;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 12px;
+        }
+
+        /* CUADRÍCULA HORIZONTAL (INFORMACIÓN) */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Para que campos específicos puedan ocupar todo el ancho si se desea */
+        .full-width {
+            grid-column: span 2;
+        }
+
+        label {
+            font-weight: 600;
+            margin-bottom: 6px;
+            font-size: 13px;
+            color: #475569;
+        }
+
+        input, select {
+            padding: 10px 12px;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #1e293b;
+            box-sizing: border-box;
+            transition: all 0.2s;
+            height: 42px;
+        }
+
+        input:focus, select:focus {
+            border-color: #007bff;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+        }
+
+        /* COLUMNA DERECHA */
+        .action-column {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* TARJETA DE SEGURIDAD */
+        .security-card {
+            background-color: #f0f7ff;
+            border-color: #d0e7ff;
+        }
+
+        .security-card h2 {
+            color: #0056b3;
+            border-bottom-color: #e0f0ff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .security-desc {
+            font-size: 13px;
+            color: #475569;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        /* TOGGLE SWITCH CONTENEDOR */
+        .toggle-container {
+            background: white;
+            border: 1px solid #d0e7ff;
+            border-radius: 10px;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .toggle-text {
+            font-size: 13px;
+            font-weight: bold;
+            color: #334155;
+        }
+
+        .toggle-subtext {
+            font-size: 11px;
+            color: #64748b;
+            margin-top: 2px;
+        }
+
+        /* ESTILO DEL TOGGLE SWITCH (CHECKBOX) */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 46px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #cbd5e1;
+            transition: .3s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #007bff;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(22px);
+        }
+
+        /* CONTENEDOR DE CONTRASEÑAS COLAPSABLE */
+        .password-inputs-container {
+            display: none; /* Oculto por defecto */
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 15px;
+            border-top: 1px solid #e0f0ff;
+            padding-top: 15px;
+        }
+
+        /* BOTONES */
+        .btn-submit {
+            background-color: #007bff;
+            color: white;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s;
+            width: 100%;
+        }
+
+        .btn-submit:hover {
+            background-color: #0056b3;
+        }
+
+        .btn-back-link {
+            display: block;
+            text-align: center;
+            color: #64748b;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .btn-back-link:hover {
+            color: #334155;
+        }
+
+        /* MENSAJES DE ERROR */
+        .error-msg {
+            color: #ef4444;
+            font-size: 11px;
+            margin-top: 4px;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .workspace {
+                grid-template-columns: 1fr;
+            }
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            .full-width {
+                grid-column: span 1;
+            }
+        }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h2>Editar: {{ user.nombre }}</h2>
-        
+        <!-- CABECERA -->
+        <div class="header">
+            <h1>Editar: {{ user.nombre }}</h1>
+            <p>Actualiza la información del perfil o configura la seguridad de la cuenta.</p>
+        </div>
+
         <form method="POST">
             {{ form.hidden_tag() }}
             
-            <div class="form-group">{{ form.nombre.label }} {{ form.nombre() }}</div>
-            <div class="form-group">{{ form.email.label }} {{ form.email() }}</div>
-            <div class="form-group">{{ form.telefono.label }} {{ form.telefono() }}</div>
-            <div class="form-group">{{ form.empresa.label }} {{ form.empresa() }}</div>
-            <div class="form-group">{{ form.empresa_origen.label }} {{ form.empresa_origen() }}</div>
-            <div class="form-group">{{ form.puesto.label }} {{ form.puesto() }}</div>
-            <div class="form-group">{{ form.jefe_directo.label }} {{ form.jefe_directo() }}</div>
-            <div class="form-group">{{ form.rol.label }} {{ form.rol() }}</div>
-            
-            <div class="form-group">{{ form.status.label }} {{ form.status() }}</div>
+            <div class="workspace">
+                
+                <!-- COLUMNA IZQUIERDA: INFORMACIÓN -->
+                <div class="card">
+                    <h2>Información del Usuario</h2>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            {{ form.nombre.label }}
+                            {{ form.nombre() }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.email.label }}
+                            {{ form.email() }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.telefono.label }}
+                            {{ form.telefono() }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.empresa.label }}
+                            {{ form.empresa() }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.empresa_origen.label }}
+                            {{ form.empresa_origen() }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.puesto.label }}
+                            {{ form.puesto() }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.jefe_directo.label }}
+                            {{ form.jefe_directo() }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.rol.label }}
+                            {{ form.rol() }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.status.label }}
+                            {{ form.status() }}
+                        </div>
+                    </div>
+                </div>
 
-            <!-- SECCIÓN DE CONTRASEÑAS -->
-            <hr style="border: 0.5px solid #eee; margin: 20px 0;">
-            <h4 style="margin-top: 0; margin-bottom: 10px; color: #666;">Seguridad (Contraseña)</h4>
+                <!-- COLUMNA DERECHA: ACCIONES Y SEGURIDAD -->
+                <div class="action-column">
+                    
+                    <!-- CARD SEGURIDAD -->
+                    <div class="card security-card">
+                        <h2>🔒 Seguridad</h2>
+                        <p class="security-desc">
+                            El cambio de contraseña es <strong>completamente opcional</strong>. Ignora esta sección si deseas mantener la contraseña actual.
+                        </p>
 
-            <div class="form-group">
-                {{ form.password.label }} {{ form.password(placeholder="Dejar en blanco para conservar la actual") }}
-                {% for error in form.password.errors %}<span class="error-msg">{{ error }}</span>{% endfor %}
+                        <!-- TOGGLE SWITCH -->
+                        <div class="toggle-container">
+                            <div>
+                                <div class="toggle-text">¿Deseas cambiar la contraseña?</div>
+                                <div class="toggle-subtext">Activa esta opción solo si necesitas establecer una nueva credencial</div>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="passwordToggle" onchange="togglePasswordFields()">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <!-- CAMPOS OCULTOS DE CONTRASEÑA -->
+                        <div class="password-inputs-container" id="passwordFieldsContainer">
+                            <div class="form-group">
+                                {{ form.password.label }}
+                                {{ form.password(placeholder="Escribe la nueva contraseña") }}
+                                {% for error in form.password.errors %}<span class="error-msg">{{ error }}</span>{% endfor %}
+                            </div>
+                            <div class="form-group">
+                                {{ form.password_confirm.label }}
+                                {{ form.password_confirm(placeholder="Confirma la nueva contraseña") }}
+                                {% for error in form.password_confirm.errors %}<span class="error-msg">{{ error }}</span>{% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- BOTÓN DE ACCIÓN -->
+                    <button type="submit" class="btn-submit">Actualizar usuario</button>
+                    
+                    <!-- BOTÓN VOLVER -->
+                    <a href="{{ url_for('main.users_list') }}" class="btn-back-link">— Volver a la lista de usuarios</a>
+
+                </div>
+
             </div>
-            <div class="form-group">
-                {{ form.password_confirm.label }} {{ form.password_confirm() }}
-                {% for error in form.password_confirm.errors %}<span class="error-msg">{{ error }}</span>{% endfor %}
-            </div>
-
-            {{ form.submit(class="btn-submit") }}
         </form>
-
-        <!-- Botón para regresar a la tabla de usuarios -->
-        <a href="{{ url_for('main.users_list') }}" class="btn-back">← Volver a la lista de usuarios</a>
     </div>
+
+    <!-- SCRIPT DE INTERACCIÓN DEL TOGGLE -->
+    <script>
+        function togglePasswordFields() {
+            const toggle = document.getElementById('passwordToggle');
+            const container = document.getElementById('passwordFieldsContainer');
+            
+            if (toggle.checked) {
+                container.style.display = 'flex';
+            } else {
+                container.style.display = 'none';
+                // Si desactiva el toggle, limpiamos los campos para que no envíe datos basura
+                document.getElementById('password').value = '';
+                document.getElementById('password_confirm').value = '';
+            }
+        }
+
+        // LÓGICA INTELIGENTE: Si WTForms regresa con errores de validación en la contraseña,
+        // el toggle se abre automáticamente al recargar para mostrar el error.
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggle = document.getElementById('passwordToggle');
+            const tieneErrores = {% if form.password.errors or form.password_confirm.errors %}true{% else %}false{% endif %};
+            
+            if (tieneErrores) {
+                toggle.checked = true;
+                togglePasswordFields();
+            }
+        });
+    </script>
 
 </body>
 </html>

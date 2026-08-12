@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ title }}</title>
+    <!-- Librerías Flatpickr para seleccionar Días Específicos -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <style>
         :root {
             --primary: #5a5a5a;
@@ -33,7 +35,7 @@
         .header-admin {
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-start;
             margin-bottom: 20px;
         }
 
@@ -56,45 +58,15 @@
         .btn-search {
             background: var(--primary);
             color: white;
+            padding: 12px 20px;
         }
 
         .btn-clear {
             background: #6c757d;
             color: white;
-            padding: 12px;
+            padding: 12px 20px;
         }
 
-        /* --- ESTILO DE TARJETA DE CALENDARIO (Para el Modal) --- */
-        .calendar-card {
-            background: white;
-            border: 1.5px solid #000;
-            border-radius: 12px;
-            width: 85px;
-            height: 85px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        }
-
-        .calendar-card .day-num {
-            font-size: 32px;
-            font-weight: 800;
-            line-height: 1;
-            color: #000;
-        }
-
-        .calendar-card .month-label {
-            font-size: 11px;
-            font-weight: 600;
-            color: #000;
-            margin-top: 5px;
-            text-align: center;
-            text-transform: capitalize;
-        }
-
-        /* --- STATUS EN CÁPSULA CORREGIDO --- */
         .badge {
             display: inline-block;
             padding: 6px 16px;
@@ -118,30 +90,89 @@
             border-color: #737373;
         }
 
-        /* TABLA Y DISEÑO GENERAL */
+        /* --- CORRECCIÓN CRÍTICA DE STICKY PARA TODAS LAS CABECERAS --- */
         .table-responsive {
-            overflow-x: auto;
+            position: relative;
+            overflow: auto;
+            /* Controla tanto el scroll horizontal como el vertical */
             margin-top: 10px;
             border: 1px solid #eee;
             border-radius: 10px;
             max-height: 70vh;
+            /* Altura máxima para activar el scroll vertical interno */
         }
 
         table {
             width: 100%;
-            border-collapse: collapse;
+            border-collapse: separate;
+            /* Cambiado de collapse a separate para evitar conflictos con sticky en webkit */
+            border-spacing: 0;
             min-width: 2200px;
         }
 
         th {
-            background-color: var(--primary);
+            background-color: var(--primary) !important;
             color: white;
             padding: 15px;
             text-align: left;
-            position: sticky;
-            top: 0;
-            z-index: 10;
+            position: sticky !important;
+            top: 0 !important;
+            z-index: 100 !important;
+            /* Z-index alto para garantizar que flote por encima de los datos */
             font-size: 14px;
+            box-shadow: inset 0 -1px 0 #444;
+            /* Línea sutil de separación inferior */
+        }
+
+        /* ESTILOS DE ORDENAMIENTO EN CABECERA */
+        th.sortable {
+            cursor: pointer;
+            position: sticky !important;
+            /* Hereda sticky de TH */
+            top: 0 !important;
+            padding-right: 32px !important;
+            user-select: none;
+        }
+
+        th.sortable:hover {
+            background-color: #4b4b4b !important;
+        }
+
+        /* ÍCONOS ANCLADOS A LA DERECHA */
+        .sort-icon-svg {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 10px;
+            height: 12px;
+            pointer-events: none;
+        }
+
+        th .arrow-up {
+            fill: rgba(255, 255, 255, 0.35);
+            transition: fill 0.2s ease;
+        }
+
+        th .arrow-down {
+            fill: rgba(255, 255, 255, 0.35);
+            transition: fill 0.2s ease;
+        }
+
+        th.asc .arrow-up {
+            fill: #3b82f6;
+        }
+
+        th.asc .arrow-down {
+            fill: rgba(255, 255, 255, 0.15);
+        }
+
+        th.desc .arrow-up {
+            fill: rgba(255, 255, 255, 0.15);
+        }
+
+        th.desc .arrow-down {
+            fill: #3b82f6;
         }
 
         td {
@@ -149,17 +180,13 @@
             border-bottom: 1px solid #f0f0f0;
             vertical-align: middle;
             font-size: 13px;
+            background-color: #ffffff;
+            /* Fondo blanco obligatorio para que los datos pasen por debajo del sticky sin transparencia */
         }
 
-        .view-dates-btn {
-            background: #e7f3ff;
-            color: var(--primary);
-            border: 1px solid var(--primary);
-            padding: 5px 12px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: bold;
+        .col-text {
+            width: 300px;
+            line-height: 1.4;
         }
 
         /* MODAL */
@@ -182,22 +209,8 @@
             padding: 30px;
             border-radius: 20px;
             width: 95%;
-            max-width: 550px;
+            max-width: 400px;
             text-align: center;
-        }
-
-        /* Contenedor de las tarjetas dentro del modal */
-        #modal-dates-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 15px;
-            margin: 25px 0;
-        }
-
-        .col-text {
-            width: 300px;
-            line-height: 1.4;
         }
     </style>
 </head>
@@ -205,256 +218,211 @@
 <body>
 
     <div class="container-fluid">
+        <!-- HEADER -->
         <div class="header-admin">
-            <h2>Panel maestro de bitácoras</h2>
-           <!-- <a href="{{ url_for('main.index') }}" class="btn btn-back">← Volver al registro</a>-->
-        </div>
-        <a href="{{ url_for('main.users_list') }}" class="btn"
-            style="background: #007bff; color: white; margin-right: 10px;">Gestión de usuarios</a>
-        <a href="{{ url_for('main.index') }}" class="btn btn-back">← Volver al registro</a>
-    </div>
-    </div>
-
-    <!-- FILTROS -->
-    <div class="filters-card"
-        style="background: white; padding: 20px; border-radius: 12px; margin-bottom: 25px; border: 1px solid #e0e6ed;">
-        <form action="{{ url_for('main.admin_dashboard') }}" method="GET">
-            <div style="display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-end;">
-
-                <div style="flex: 2; min-width: 150px; display: flex; flex-direction: column;">
-                    <label style="font-size: 11px; font-weight: bold; color: #666; margin-bottom: 5px;">Búsqueda
-                        libre</label>
-                    <input type="text" name="q" style="padding: 10px; border-radius: 8px; border: 1px solid #dcdfe6;"
-                        placeholder="Nombre, empresa, jefe, proyecto..." value="{{ search_query }}">
-                </div>
-
-                <!-- NUEVO FILTRO DE MES -->
-                <div style="flex: 1; min-width: 120px; display: flex; flex-direction: column;">
-                    <label style="font-size: 11px; font-weight: bold; color: #666; margin-bottom: 5px;">Mes</label>
-                    <select name="mes" onchange="this.form.submit()"
-                        style="padding: 10px; border-radius: 8px; border: 1px solid #dcdfe6;">
-                        <option value="">Todos los meses</option>
-                        {% for val, label in meses_opciones %}
-                        <option value="{{ val }}" {{ 'selected' if val==mes_filter }}>{{ label }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <div style="flex: 1; min-width: 120px; display: flex; flex-direction: column;">
-                    <label style="font-size: 11px; font-weight: bold; color: #666; margin-bottom: 5px;">Empresa</label>
-                    <select name="empresa" onchange="this.form.submit()"
-                        style="padding: 10px; border-radius: 8px; border: 1px solid #dcdfe6;">
-                        <option value="">Todas</option>
-                        {% for e in empresas %}
-                        <option value="{{ e }}" {{ 'selected' if e==empresa_filter }}>{{ e }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <div style="flex: 1; min-width: 120px; display: flex; flex-direction: column;">
-                    <label style="font-size: 11px; font-weight: bold; color: #666; margin-bottom: 5px;">Estatus</label>
-                    <select name="status" onchange="this.form.submit()"
-                        style="padding: 10px; border-radius: 8px; border: 1px solid #dcdfe6;">
-                        <option value="">Todos</option>
-                        <option value="En proceso" {{ 'selected' if status_filter=='En proceso' }}>En proceso
-                        </option>
-                        <option value="Finalizado" {{ 'selected' if status_filter=='Finalizado' }}>Finalizado
-                        </option>
-                    </select>
-                </div>
-
-                <div style="display: flex; gap: 10px; margin-top: 10px;">
-                    <button type="submit" class="btn btn-search">Aplicar</button>
-
-                    <!-- Mostramos Limpiar solo si hay algún filtro activo -->
-                    {% if search_query or empresa_filter or status_filter or mes_filter %}
-                    <a href="{{ url_for('main.admin_dashboard') }}" class="btn btn-clear">Limpiar</a>
-                    {% endif %}
-
-                    <!-- Botón PDF actualizado para enviar también el mes_filter -->
-                    <button type="button" class="btn" style="background: #dc3545; color: white;"
-                        onclick="openPdfModal()">
-                        📄 Generar informe PDF
-                    </button>
-                    <button type="button" class="btn" style="background: #dc3545; color: white;"
-                        onclick="descargarTablaPdf()">
-                        📄 Descargar vista actual (PDF)
-                    </button>
-                </div>
+            <div>
+                <h1 style="margin: 0; font-size: 2rem;">Dashboard</h1>
+                <p style="margin: 5px 0 0 0; color: #666;">Gestión global de bitácoras y registros operativos.</p>
             </div>
-        </form>
-    </div>
+            <div style="display: flex; gap: 10px;">
+                <a href="{{ url_for('main.admin_home') }}" class="btn btn-back">← Volver al inicio</a>
+                <button type="button" class="btn" style="background: #ef233c; color: white;" onclick="openPdfModal()">
+                    📄 Generar informe PDF
+                </button>
+                <button type="button" class="btn" style="background: #ef233c; color: white;"
+                    onclick="descargarTablaPdf()">
+                    📄 Descargar vista actual (PDF)
+                </button>
+            </div>
+        </div>
 
-    <div class="table-responsive">
-        <table>
-            <thead>
-                <tr>
-                    <th>Periodo semanal</th>
-                    <th>Nombre</th>
-                    <th>Estado usuario</th>
-                    <th>Empresa</th>
-                    <th>Puesto</th>
-                    <th style="text-align: center;">Días laborados</th>
-                    <th>Jefe directo</th>
-                    <th>Cargo jefe</th>
-                    <th>Proyecto</th>
-                    <th style="text-align: center;">Estatus</th>
-                    <th class="col-text">Actividades</th>
-                    <th>Herramientas</th>
-                    <th>Entregable</th>
-                    <th class="col-text">Medio</th>
-                    <th class="col-text">Incidencias</th>
-                    <th style="text-align: center; min-width: 150px;">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for reporte in reportes %}
-                <tr>
-                    <!-- REGRESA A TEXTO NORMAL -->
-                    <td>
-                        <span style="font-weight: bold; color: #0056b3;">{{ reporte.rango_periodo }}</span><br>
-                        <!--<span style="font-size: 10px; color: #999;">Reg: {{ reporte.timestamp.strftime('%d/%m/%Y')
-                                }}</span>-->
-                    </td>
-                    <td> <strong>{{ reporte.nombre_completo }}</strong><br>
+        <!-- FILTROS -->
+        <div class="filters-card"
+            style="background: white; padding: 20px; border-radius: 12px; margin-bottom: 25px; border: 1px solid #e0e6ed;">
+            <form action="{{ url_for('main.admin_dashboard') }}" method="GET" id="filtrosForm">
+                <div style="display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-end;">
 
-                    </td>
-                    <td style="text-align: center;">
-                        {% if reporte.autor.activo %}
-                        <span style="color: #28a745; font-weight: bold;">● Vigente</span>
-                        {% else %}
-                        <span style="color: #dc3545; font-weight: bold;">● No vigente</span>
-                        {% endif %}
-                    </td>
-                    <td>{{ reporte.empresa }}</td>
-                    <td>{{ reporte.puesto }}</td>
+                    <!-- SELECTOR DE TIPO DE FECHA -->
+                    <div style="flex: 0.8; min-width: 140px; display: flex; flex-direction: column;">
+                        <label style="font-size: 11px; font-weight: bold; color: #666; margin-bottom: 5px;">Tipo de
+                            Búsqueda</label>
+                        <select name="tipo_filtro" id="tipo_filtro" onchange="toggleFiltrosFechas()"
+                            style="padding: 10px; border-radius: 8px; border: 1px solid #dcdfe6; background-color: #f8f9fa;">
+                            <option value="rango" {{ 'selected' if tipo_filtro=='rango' else '' }}>Por Rango</option>
+                            <option value="especificas" {{ 'selected' if tipo_filtro=='especificas' else '' }}>Días
+                                específicos</option>
+                        </select>
+                    </div>
 
-                    <td style="text-align: center;">
-                        {% if reporte.periodo_semanal %}
-                        <button class="view-dates-btn"
-                            onclick="openDatesModal('{{ reporte.periodo_semanal }}', '{{ reporte.nombre_completo }}')">
-                            {{ reporte.periodo_semanal.split(' | ')|length }} días
-                        </button>
-                        {% else %} - {% endif %}
-                    </td>
-
-                    <td>{{ reporte.nombre_jefe_inmediato }}</td>
-                    <td>{{ reporte.cargo_jefe_inmediato }}</td>
-                    <td>{{ reporte.proyecto_actual }}</td>
-
-                    <!-- STATUS EN CÁPSULA CORREGIDO -->
-                    <td style="text-align: center;">
-                        <span
-                            class="badge {{ 'badge-finalizado' if reporte.status == 'Finalizado' else 'badge-proceso' }}">
-                            {{ reporte.status }}
-                        </span>
-                    </td>
-
-                    <td class="col-text">{{ reporte.actividades }}</td>
-                    <td>{{ reporte.herramientas_utilizadas or '-' }}</td>
-                    <td>{{ reporte.entregable_generado or '-' }}</td>
-                    <td class="col-text">{{ reporte.medio_entregable or '-' }}</td>
-                    <td class="col-text" style="color: var(--danger);">{{ reporte.incidencias or 'Ninguna' }}</td>
-                    <td style="text-align: center;">
-                        <div style="display: flex; flex-direction: column; gap: 6px;">
-                            <!-- Editar Usuario
-                            <a href="{{ url_for('main.edit_user', user_id=reporte.autor.id) }}" class="btn"
-                                style="background: #040404; color: white; padding: 6px; font-size: 11px;">
-                                Editar usuario
-                            </a>
-
-                           
-                            <form action="{{ url_for('main.delete_user', user_id=reporte.autor.id) }}" method="POST"
-                                style="margin: 0;"
-                                onsubmit="return confirm('ATENCIÓN: ¿Estás seguro de eliminar a {{ reporte.autor.nombre }}? Esto borrará su cuenta y TODOS sus reportes.');">
-                                <button type="submit" class="btn"
-                                    style="background: #dc3545; color: white; padding: 6px; font-size: 11px; width: 100%;">
-                                    Borrar usuario
-                                </button> -->
-                            </form>
-
-                            <hr style="width: 100%; border: 0.5px solid #eee; margin: 2px 0;">
-
-                            <a href="{{ url_for('main.edit_report', report_id=reporte.id) }}" class="btn"
-                                style="background: #17a2b8; color: white; padding: 6px; font-size: 11px; width: 100%; box-sizing: border-box; text-align: center; margin-bottom: 4px;">
-                                Editar fila
-                            </a>
-
-                            <!-- Eliminar solo este reporte -->
-                            <form action="{{ url_for('main.delete_report', report_id=reporte.id) }}" method="POST"
-                                style="margin: 0;" onsubmit="return confirm('¿Borrar solo este reporte?');">
-                                <button type="submit" class="btn"
-                                    style="background: #6c757d; color: white; padding: 6px; font-size: 11px; width: 100%;">
-                                    Borrar fila
-                                </button>
-                            </form>
+                    <!-- CONTENEDOR 1: RANGO DE FECHAS -->
+                    <div id="contenedor_rango"
+                        style="flex: 2; min-width: 250px; display: flex; flex-direction: column;">
+                        <label style="font-size: 11px; font-weight: bold; color: #666; margin-bottom: 5px;">Rango de
+                            Fechas</label>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <input type="date" name="fecha_inicio" id="fecha_inicio" value="{{ fecha_inicio }}"
+                                style="padding: 10px; border-radius: 8px; border: 1px solid #dcdfe6; width: 100%;"
+                                onchange="validarFechas()">
+                            <span style="color: #666; font-weight: bold;">-</span>
+                            <input type="date" name="fecha_fin" id="fecha_fin" value="{{ fecha_fin }}"
+                                style="padding: 10px; border-radius: 8px; border: 1px solid #dcdfe6; width: 100%;"
+                                onchange="validarFechas()">
                         </div>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    </div>
+                    </div>
 
-    <!-- MODAL -->
-    <div id="datesModal" class="modal-overlay">
-        <div class="modal-content">
-            <h3 id="modal-user-name" style="margin-top:0; font-size: 1.4rem;">Días Laborados</h3>
-            <div id="modal-dates-container">
-                <!-- Aquí se generarán las tarjetas de calendario -->
-            </div>
-            <button class="btn btn-back" style="width: 100%; margin-top: 10px;" onclick="closeModal()">Cerrar
-                Ventana</button>
+                    <!-- CONTENEDOR 2: DÍAS ESPECÍFICOS (Oculto por defecto) -->
+                    <div id="contenedor_especificas"
+                        style="flex: 2; min-width: 250px; display: none; flex-direction: column;">
+                        <label style="font-size: 11px; font-weight: bold; color: #666; margin-bottom: 5px;">Seleccionar
+                            días específicos</label>
+                        <input type="text" name="fechas_especificas" id="fechas_especificas"
+                            value="{{ fechas_especificas }}" placeholder="Haz clic para seleccionar fechas..."
+                            style="padding: 10px; border-radius: 8px; border: 1px solid #dcdfe6; width: 100%; box-sizing: border-box; cursor: pointer; background: white;">
+                    </div>
+
+                    <div style="flex: 1.5; min-width: 150px; display: flex; flex-direction: column;">
+                        <label style="font-size: 11px; font-weight: bold; color: #666; margin-bottom: 5px;">Búsqueda
+                            libre</label>
+                        <input type="text" name="q"
+                            style="padding: 10px; border-radius: 8px; border: 1px solid #dcdfe6;"
+                            placeholder="Nombre, jefe, proyecto..." value="{{ search_query }}">
+                    </div>
+
+                    <div style="flex: 1; min-width: 120px; display: flex; flex-direction: column;">
+                        <label
+                            style="font-size: 11px; font-weight: bold; color: #666; margin-bottom: 5px;">Empresa</label>
+                        <select name="empresa" onchange="this.form.submit()"
+                            style="padding: 10px; border-radius: 8px; border: 1px solid #dcdfe6;">
+                            <option value="">Todas</option>
+                            {% for e in empresas %}
+                            <option value="{{ e }}" {{ 'selected' if e==empresa_filter }}>{{ e }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div style="flex: 1; min-width: 120px; display: flex; flex-direction: column;">
+                        <label
+                            style="font-size: 11px; font-weight: bold; color: #666; margin-bottom: 5px;">Estatus</label>
+                        <select name="status" onchange="this.form.submit()"
+                            style="padding: 10px; border-radius: 8px; border: 1px solid #dcdfe6;">
+                            <option value="">Todos</option>
+                            <option value="En proceso" {{ 'selected' if status_filter=='En proceso' }}>En proceso
+                            </option>
+                            <option value="Finalizado" {{ 'selected' if status_filter=='Finalizado' }}>Finalizado
+                            </option>
+                        </select>
+                    </div>
+
+                    <div style="display: flex; gap: 10px;">
+                        <button type="submit" class="btn btn-search">Aplicar</button>
+                        {% if search_query or empresa_filter or status_filter or fecha_inicio or fecha_fin or
+                        fechas_especificas %}
+                        <a href="{{ url_for('main.admin_dashboard') }}" class="btn btn-clear">Limpiar</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- TABLA DE RESULTADOS -->
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Periodo del reporte</th>
+                        <th>Fechas específicas</th>
+                        <th>Nombre</th>
+                        <th>Estado usuario</th>
+                        <th>Empresa</th>
+                        <th>Puesto</th>
+                        <th style="text-align: center;">Días laborados</th>
+                        <th>Jefe directo</th>
+                        <th>Cargo jefe</th>
+                        <th>Proyecto</th>
+                        <th style="text-align: center;">Estatus</th>
+                        <th class="col-text">Actividades</th>
+                        <th>Herramientas</th>
+                        <th>Entregable</th>
+                        <th class="col-text">Medio</th>
+                        <th class="col-text">Incidencias</th>
+                        <th style="text-align: center; min-width: 150px;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for reporte in reportes %}
+                    <tr>
+                        <!-- ATRIBUTO data-sort-value para ordenamiento exacto e inteligente -->
+                        <td data-sort-value="{{ reporte.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}">
+                            <span style="font-weight: bold; color: #0056b3;">{{ reporte.rango_periodo }}</span>
+                        </td>
+                        <td data-sort-value="{{ reporte.fechas_especificas }}" style="font-size: 12px; color: #555;">
+                            {{ reporte.fechas_especificas }}
+                        </td>
+                        <td data-sort-value="{{ reporte.nombre_completo.lower() }}"><strong>{{ reporte.nombre_completo
+                                }}</strong></td>
+                        <td data-sort-value="{{ '1' if reporte.autor.activo else '0' }}" style="text-align: center;">
+                            {% if reporte.autor.activo %}
+                            <span style="color: #28a745; font-weight: bold;">● Vigente</span>
+                            {% else %}
+                            <span style="color: #dc3545; font-weight: bold;">● No vigente</span>
+                            {% endif %}
+                        </td>
+                        <td data-sort-value="{{ reporte.empresa.lower() }}">{{ reporte.empresa }}</td>
+                        <td data-sort-value="{{ reporte.puesto.lower() }}">{{ reporte.puesto }}</td>
+
+                        <td data-sort-value="{{ reporte.dias_contados }}"
+                            style="text-align: center; font-weight: bold;">
+                            {{ reporte.dias_contados }}
+                        </td>
+
+                        <td data-sort-value="{{ reporte.nombre_jefe_inmediato.lower() }}">{{
+                            reporte.nombre_jefe_inmediato }}</td>
+                        <td data-sort-value="{{ reporte.cargo_jefe_inmediato.lower() }}">{{ reporte.cargo_jefe_inmediato
+                            }}</td>
+                        <td data-sort-value="{{ reporte.proyecto_actual.lower() }}">{{ reporte.proyecto_actual }}</td>
+
+                        <td data-sort-value="{{ reporte.status }}" style="text-align: center;">
+                            <span
+                                class="badge {{ 'badge-finalizado' if reporte.status == 'Finalizado' else 'badge-proceso' }}">
+                                {{ reporte.status }}
+                            </span>
+                        </td>
+
+                        <td>{{ reporte.actividades }}</td>
+                        <td>{{ reporte.herramientas_utilizadas or '-' }}</td>
+                        <td>{{ reporte.entregable_generado or '-' }}</td>
+                        <td>{{ reporte.medio_entregable or '-' }}</td>
+                        <td style="color: var(--danger);">{{ reporte.incidencias or 'Ninguna' }}</td>
+                        <td style="text-align: center;">
+                            <div style="display: flex; flex-direction: column; gap: 6px;">
+                                <a href="{{ url_for('main.edit_report', report_id=reporte.id) }}" class="btn"
+                                    style="background: #17a2b8; color: white; padding: 6px; font-size: 11px; width: 100%; box-sizing: border-box; text-align: center; margin-bottom: 4px;">
+                                    Editar fila
+                                </a>
+                                <form action="{{ url_for('main.delete_report', report_id=reporte.id) }}" method="POST"
+                                    style="margin: 0;" onsubmit="return confirm('¿Borrar solo este reporte?');">
+                                    <button type="submit" class="btn"
+                                        style="background: #6c757d; color: white; padding: 6px; font-size: 11px; width: 100%;">
+                                        Borrar fila
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
-
-    <script>
-        const nombresMeses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-
-        function openDatesModal(fechasStr, nombre) {
-            const modal = document.getElementById('datesModal');
-            const container = document.getElementById('modal-dates-container');
-            document.getElementById('modal-user-name').innerText = "Días de " + nombre;
-
-            container.innerHTML = '';
-
-            // Procesamos cada fecha de la cadena "16/02/2026 | 17/02/2026"
-            fechasStr.split(' | ').forEach(f => {
-                if (f.trim()) {
-                    const partes = f.split('/'); // [día, mes, año]
-                    const dia = partes[0];
-                    const mesIndex = parseInt(partes[1]) - 1;
-                    const año = partes[2];
-
-                    // Creamos la estructura de la tarjeta de calendario
-                    const card = document.createElement('div');
-                    card.className = 'calendar-card';
-                    card.innerHTML = `
-                        <span class="day-num">${dia}</span>
-                        <span class="month-label">${nombresMeses[mesIndex]} ${año}</span>
-                    `;
-                    container.appendChild(card);
-                }
-            });
-
-            modal.style.display = 'flex';
-        }
-
-        function closeModal() { document.getElementById('datesModal').style.display = 'none'; }
-        window.onclick = function (e) { if (e.target == document.getElementById('datesModal')) closeModal(); }
-    </script>
 
     <!-- MODAL PARA PDF -->
     <div id="pdfModal" class="modal-overlay">
-        <div class="modal-content" style="max-width: 400px;">
+        <div class="modal-content">
             <h3 style="margin-top: 0; color: #333;">Generar Informe PDF</h3>
-            <p style="font-size: 13px; color: #555; text-align: left;">Ingrese el nombre del responsable de la cuenta
-                (Ej: Hilda Hernández, Jorge Pichardo, Jorge Medellin):</p>
-
+            <p style="font-size: 13px; color: #555; text-align: left;">Ingrese el nombre del responsable de la cuenta:
+            </p>
             <input type="text" id="responsableInput" placeholder="Nombre completo..."
                 style="width: 100%; padding: 10px; margin-bottom: 20px; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box;">
-
             <div style="display: flex; gap: 10px;">
                 <button class="btn btn-search" style="flex: 1;" onclick="descargarPdf()">Descargar PDF</button>
                 <button class="btn btn-back" style="flex: 1;" onclick="closePdfModal()">Cancelar</button>
@@ -462,19 +430,57 @@
         </div>
     </div>
 
+    <!-- SCRIPTS -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/es.js"></script>
     <script>
-        function openPdfModal() {
-            // 1. Buscamos qué empresa está seleccionada en el filtro
-            const empresaSelect = document.querySelector('select[name="empresa"]');
-            const empresaSeleccionada = empresaSelect.value;
+        // Inicializar el calendario de Días Específicos
+        flatpickr("#fechas_especificas", {
+            mode: "multiple",
+            dateFormat: "d/m/Y",
+            locale: "es",
+            conjunction: ", "
+        });
 
-            // 2. Si está en blanco ("Todas"), bloqueamos y avisamos
-            if (!empresaSeleccionada) {
-                alert("⚠️ ATENCIÓN: Para generar este informe formal, primero debe seleccionar una Empresa Cliente específica en los filtros de arriba.");
-                return; // Detenemos el código, el modal no se abre
+        // Lógica para mostrar/ocultar Rango o Días Específicos
+        function toggleFiltrosFechas() {
+            const selector = document.getElementById("tipo_filtro").value;
+            const divRango = document.getElementById("contenedor_rango");
+            const divEspecificas = document.getElementById("contenedor_especificas");
+
+            if (selector === 'rango') {
+                divRango.style.display = 'flex';
+                divEspecificas.style.display = 'none';
+
+                const fp = document.getElementById('fechas_especificas')._flatpickr;
+                if (fp) fp.clear();
+            } else {
+                divRango.style.display = 'none';
+                divEspecificas.style.display = 'flex';
+                document.getElementById('fecha_inicio').value = '';
+                document.getElementById('fecha_fin').value = '';
             }
+        }
 
-            // 3. Si todo está bien, abrimos la ventana
+        document.addEventListener('DOMContentLoaded', toggleFiltrosFechas);
+
+        // Validación de fechas inicio-fin
+        function validarFechas() {
+            const inicio = document.getElementById('fecha_inicio').value;
+            const fin = document.getElementById('fecha_fin').value;
+            if (inicio && fin && inicio > fin) {
+                alert("⚠️ Error: La fecha inicial no puede ser mayor que la fecha final.");
+                document.getElementById('fecha_inicio').value = '';
+            }
+        }
+
+        // LÓGICA DE PDF (Construcción inteligente de URLs)
+        function openPdfModal() {
+            const empresaSelect = document.querySelector('select[name="empresa"]');
+            if (!empresaSelect.value) {
+                alert("⚠️ ATENCIÓN: Debe seleccionar una Empresa Cliente específica en los filtros.");
+                return;
+            }
             document.getElementById('pdfModal').style.display = 'flex';
             document.getElementById('responsableInput').focus();
         }
@@ -483,39 +489,121 @@
             document.getElementById('pdfModal').style.display = 'none';
         }
 
-        function descargarPdf() {
-            const responsable = document.getElementById('responsableInput').value.trim();
-            if (!responsable) {
-                alert("Por favor, ingrese el nombre del responsable de la cuenta.");
-                return;
-            }
-
-            // Construimos la URL base con los filtros actuales
-            let url = "{{ url_for('main.export_pdf', q=search_query, empresa=empresa_filter, status=status_filter, mes=mes_filter) }}";
-
-            // Reemplazamos los caracteres especiales del HTML por '&' para agregar el nuevo parámetro
+        function construirUrlPDF(rutaBase, agregarResponsable = false) {
+            let url = rutaBase + "?q={{ search_query }}&empresa={{ empresa_filter }}&status={{ status_filter }}";
             url = url.replace(/&amp;/g, '&');
 
-            // Añadimos el responsable a la URL
-            url += "&responsable=" + encodeURIComponent(responsable);
+            if (agregarResponsable) {
+                const responsable = document.getElementById('responsableInput').value.trim();
+                if (!responsable) return null;
+                url += "&responsable=" + encodeURIComponent(responsable);
+            }
 
-            // Redirigir para descargar
+            const tipo = document.getElementById('tipo_filtro').value;
+            url += "&tipo_filtro=" + encodeURIComponent(tipo);
+
+            if (tipo === 'rango') {
+                const f_ini = document.getElementById('fecha_inicio').value;
+                const f_fin = document.getElementById('fecha_fin').value;
+                if (f_ini) url += "&fecha_inicio=" + encodeURIComponent(f_ini);
+                if (f_fin) url += "&fecha_fin=" + encodeURIComponent(f_fin);
+            } else {
+                const f_esp = document.getElementById('fechas_especificas').value;
+                if (f_esp) url += "&fechas_especificas=" + encodeURIComponent(f_esp);
+            }
+            return url;
+        }
+
+        // Descargas de PDF
+        function descargarPdf() {
+            const url = construirUrlPDF("{{ url_for('main.export_pdf') }}", true);
+            if (!url) {
+                alert("Por favor, ingrese el nombre del responsable.");
+                return;
+            }
             window.location.href = url;
             closePdfModal();
         }
 
         function descargarTablaPdf() {
-            // Construimos la URL leyendo los parámetros actuales
-            let url = "{{ url_for('main.export_table_pdf', q=search_query, empresa=empresa_filter, status=status_filter, mes=mes_filter) }}";
-
-            // Reparamos posibles errores de formato HTML en los parámetros
-            url = url.replace(/&amp;/g, '&');
-
-            // Redirigimos a la ruta de descarga
+            const url = construirUrlPDF("{{ url_for('main.export_table_pdf') }}", false);
             window.location.href = url;
         }
-    </script>
 
+        // --- SISTEMA DE ORDENAMIENTO DE DOBLE FLECHA APILADA ---
+        document.addEventListener("DOMContentLoaded", function () {
+            const table = document.querySelector("table");
+            const headers = table.querySelectorAll("thead th");
+            const tbody = table.querySelector("tbody");
+
+            // Código SVG del ícono de doble flecha vertical
+            const svgHTML = `
+                <svg class="sort-icon-svg" viewBox="0 0 24 24">
+                    <path class="arrow-up" d="M12 4l-6 7h12z" />
+                    <path class="arrow-down" d="M12 20l6-7H6z" />
+                </svg>
+            `;
+
+            headers.forEach((header, index) => {
+                // No habilitamos ordenamiento para la columna de "Acciones" (última)
+                if (index === headers.length - 1) return;
+
+                header.classList.add("sortable");
+
+                // Insertamos el SVG de doble flecha al final de la celda de forma nativa
+                header.insertAdjacentHTML('beforeend', svgHTML);
+
+                header.addEventListener("click", () => {
+                    const isAsc = header.classList.contains("asc");
+
+                    // Reseteamos el estado visual de todos los otros encabezados
+                    headers.forEach(h => {
+                        h.classList.remove("asc", "desc");
+                    });
+
+                    // Alternamos entre clases asc y desc
+                    if (isAsc) {
+                        header.classList.add("desc");
+                        ordenarFilas(index, false);
+                    } else {
+                        header.classList.add("asc");
+                        ordenarFilas(index, true);
+                    }
+                });
+            });
+
+            // Función física para ordenar filas en el DOM
+            function ordenarFilas(colIndex, esAscendente) {
+                const filas = Array.from(tbody.querySelectorAll("tr"));
+
+                filas.sort((filaA, filaB) => {
+                    const celdaA = filaA.cells[colIndex];
+                    const celdaB = filaB.cells[colIndex];
+
+                    const valA = celdaA.getAttribute("data-sort-value") || celdaA.innerText.trim();
+                    const valB = celdaB.getAttribute("data-sort-value") || celdaB.innerText.trim();
+
+                    // Validación numérica ESTRICTA (Evita que parseFloat confunda fechas "YYYY-MM-DD" con un número)
+                    const esNumA = !isNaN(valA) && !isNaN(parseFloat(valA));
+                    const esNumB = !isNaN(valB) && !isNaN(parseFloat(valB));
+
+                    if (esNumA && esNumB) {
+                        const numA = parseFloat(valA);
+                        const numB = parseFloat(valB);
+                        return esAscendente ? numA - numB : numB - numA;
+                    }
+
+                    // Al no ser número puro, ordena como string (las fechas ISO se ordenan perfecto aquí)
+                    return esAscendente
+                        ? valA.localeCompare(valB, 'es', { sensitivity: 'base' })
+                        : valB.localeCompare(valA, 'es', { sensitivity: 'base' });
+                });
+
+                // Re-insertamos las filas ordenadas al final de la tabla
+                filas.forEach(fila => tbody.appendChild(fila));
+            }
+        });
+    </script>
 </body>
 
 </html>

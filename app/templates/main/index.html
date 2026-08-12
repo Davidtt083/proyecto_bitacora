@@ -266,9 +266,8 @@
         <div class="header">
             <h2>Nueva bitácora</h2>
             <div class="btn-group">
-                {% if current_user.rol == 'admin' %}
-                <a href="{{ url_for('main.admin_dashboard') }}" class="btn admin-btn">Panel admin</a>
-                {% endif %}
+                <!-- Redirige automáticamente al inicio correcto según el rol del usuario logueado -->
+                <a href="{{ url_for('main.index') }}" class="btn admin-btn">← Volver al inicio</a>
                 <a href="{{ url_for('auth.logout') }}" class="btn logout-btn">Cerrar sesión</a>
             </div>
         </div>
@@ -294,7 +293,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="periodo_semanal">Días laborados de esta semana</label>
+                    <label for="periodo_semanal">Fecha de la actividad</label>
                     <div class="input-icon-wrapper">
                         <!-- Icono SVG de Calendario -->
                         <svg class="calendar-icon" viewBox="0 0 24 24">
@@ -361,17 +360,19 @@
     <script src="https://npmcdn.com/flatpickr/dist/l10n/es.js"></script> <!-- Idioma español -->
 
     <script>
-        // Inicialización del calendario
-        flatpickr("#datepicker", {
-            mode: "multiple",        // Permite marcar varios días
-            dateFormat: "d/m/Y",     // Formato de fecha
-            locale: "es",            // Calendario en español
-            conjunction: " | ",      // Separador visual entre fechas
-            allowInput: true
+        document.addEventListener('DOMContentLoaded', function () {
+            // Inicializar el calendario para UN SOLO DÍA
+            flatpickr("#datepicker", {
+                mode: "single",        // <-- CAMBIO: Solo permite marcar UN día
+                dateFormat: "d/m/Y",
+                locale: "es",
+                defaultDate: "today",  // <-- CAMBIO: Selecciona hoy por defecto
+                maxDate: "today",
+                disableMobile: true
+            });
         });
-    </script>
 
-    <script>
+        // Mostrar/Ocultar el medio entregable
         document.addEventListener('DOMContentLoaded', function () {
             const statusSelect = document.getElementById('status-select');
             const medioContainer = document.getElementById('medio-entregable-container');
@@ -383,57 +384,8 @@
                     medioContainer.classList.remove('show-field');
                 }
             }
-
-            // Ejecutar al cargar (por si acaso hay errores de validación)
             toggleMedioField();
-
-            // Escuchar cambios en el selector
             statusSelect.addEventListener('change', toggleMedioField);
-        });
-    </script>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // 1. CÁLCULO DE DÍAS POR DEFECTO (Lunes a Viernes de esta semana)
-            // Esto solo sirve para que aparezcan marcados al abrir, pero no bloquea el resto
-            const hoy = new Date();
-            const diaSemana = hoy.getDay();
-            const lunes = new Date(hoy);
-            const diffLunes = diaSemana === 0 ? -6 : 1 - diaSemana;
-            lunes.setDate(hoy.getDate() + diffLunes);
-
-            const diasPorDefecto = [];
-            for (let i = 0; i < 5; i++) {
-                let d = new Date(lunes);
-                d.setDate(lunes.getDate() + i);
-                diasPorDefecto.push(d);
-            }
-
-            // 2. INICIALIZAR FLATPICKR SIN RESTRICCIONES
-            flatpickr("#datepicker", {
-                mode: "multiple",
-                dateFormat: "d/m/Y",
-                locale: "es",
-                conjunction: " | ",
-                // minDate: lunes,    <-- ELIMINADO para habilitar fechas pasadas
-                // maxDate: domingo,  <-- ELIMINADO para habilitar fechas futuras
-                defaultDate: diasPorDefecto,
-                disableMobile: true,
-
-                onChange: function (selectedDates, dateStr, instance) {
-                    if (selectedDates.length === 0) {
-                        instance.input.placeholder = "Ningún día seleccionado";
-                    } else {
-                        instance.input.placeholder = selectedDates.length + " días seleccionados";
-                    }
-                },
-
-                onReady: function (selectedDates, dateStr, instance) {
-                    if (selectedDates.length > 0) {
-                        instance.input.placeholder = selectedDates.length + " días seleccionados";
-                    }
-                }
-            });
         });
     </script>
 
@@ -448,15 +400,19 @@
             {% for category, message in messages %}
 
             {% if category == 'guardado' %}
-            /* Alerta Gigante de Éxito */
+            /* Alerta de Éxito con Retardo de 2 Segundos y Redirección automática */
             Swal.fire({
                 title: '¡Guardado Exitoso!',
                 text: '{{ message }}',
                 icon: 'success',
-                confirmButtonText: 'Continuar',
-                confirmButtonColor: '#28a745',
+                timer: 2000,                  // 2 segundos en pantalla
+                timerProgressBar: true,       // Barra de progreso visual
+                showConfirmButton: false,     // Oculta el botón para automatizarlo
                 allowOutsideClick: false,
                 backdrop: `rgba(0,0,0,0.6)`
+            }).then(() => {
+                // Redirige al inicio (Dashboard del usuario) al finalizar la alerta
+                window.location.href = "{{ url_for('main.index') }}";
             });
 
             {% elif category == 'error' %}

@@ -4,44 +4,335 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ title }}</title>
+    <!-- CORRECCIÓN: Cambiado de class="stylesheet" a rel="stylesheet" -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f4f7f9; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px;}
-        .container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 800px; }
-        h2 { text-align: center; color: #333; margin-top: 0; margin-bottom: 20px; }
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .full-width { grid-column: span 2; }
-        .form-group { display: flex; flex-direction: column; }
-        label { font-weight: 600; margin-bottom: 5px; font-size: 13px; color: #555; }
-        input, select, textarea { padding: 10px; border: 1.5px solid #ddd; border-radius: 8px; font-size: 14px; width: 100%; box-sizing: border-box;}
-        textarea { height: 80px; resize: vertical; }
-        .btn-submit { background: #17a2b8; color: white; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 20px; font-size: 16px;}
-        .btn-back { display: block; text-align: center; margin-top: 15px; color: #5a5a5a; text-decoration: none; font-weight: bold; }
-        @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } .full-width { grid-column: span 1; } }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: #f8fafc;
+            margin: 0;
+            padding: 30px 20px;
+            color: #1e293b;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* AMPLIAMOS EL PANEL HORIZONTALMENTE */
+        .container {
+            max-width: 1300px; 
+            width: 100%;
+        }
+
+        /* CABECERA MÁS COMPACTA */
+        .header {
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            margin: 0 0 4px 0;
+            font-size: 1.65rem;
+            color: #0f172a;
+        }
+
+        .header p {
+            margin: 0;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        /* DISTRIBUCIÓN HORIZONTAL DE TRABAJO */
+        .workspace {
+            display: grid;
+            grid-template-columns: 3fr 1fr;
+            gap: 20px;
+            align-items: start;
+        }
+
+        .card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        }
+
+        .card h2 {
+            margin-top: 0;
+            margin-bottom: 18px;
+            font-size: 1.1rem;
+            color: #0f172a;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 10px;
+        }
+
+        /* CUADRÍCULA DE 3 COLUMNAS PARA MÁXIMA HORIZONTALIDAD */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px 18px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* CLASES PARA EXPANDIR TEXTAREAS */
+        .span-2 {
+            grid-column: span 2;
+        }
+
+        label {
+            font-weight: 600;
+            margin-bottom: 4px;
+            font-size: 12px;
+            color: #475569;
+        }
+
+        input, select, textarea, .custom-trigger {
+            padding: 8px 12px;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 13.5px;
+            color: #1e293b;
+            box-sizing: border-box;
+            transition: all 0.2s;
+            height: 38px;
+        }
+
+        .custom-trigger {
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            width: 100%;
+            text-align: left;
+        }
+
+        .custom-trigger:focus {
+            border-color: #007bff;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+        }
+
+        .trigger-text {
+            font-weight: 600;
+        }
+
+        /* TEXTAREAS MÁS BAJAS PERO MÁS ANCHAS */
+        textarea {
+            height: 85px; 
+            resize: vertical;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: #007bff;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+        }
+
+        /* COLUMNA DE ACCIONES (DERECHA) */
+        .action-column {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .action-card {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding: 20px;
+        }
+
+        /* BOTONES */
+        .btn-submit {
+            background-color: #17a2b8;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14.5px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s;
+            width: 100%;
+        }
+
+        .btn-submit:hover {
+            background-color: #138496;
+        }
+
+        .btn-back-link {
+            display: block;
+            text-align: center;
+            color: #64748b;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .btn-back-link:hover {
+            color: #334155;
+        }
+
+        @media (max-width: 1024px) {
+            .workspace {
+                grid-template-columns: 1fr;
+            }
+            .form-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .span-2 {
+                grid-column: span 1;
+            }
+        }
     </style>
 </head>
 <body>
+
     <div class="container">
-        <h2>Editar fila de bitácora</h2>
+        <!-- CABECERA -->
+        <div class="header">
+            <h1>Editar bitácora</h1>
+            <p>Modifica o corrige la información registrada en esta fila de la bitácora.</p>
+        </div>
+
         <form method="POST">
             {{ form.hidden_tag() }}
-            <div class="form-grid">
-                <div class="form-group">{{ form.nombre_completo.label }} {{ form.nombre_completo() }}</div>
-                <div class="form-group">{{ form.empresa.label }} {{ form.empresa() }}</div>
-                <div class="form-group">{{ form.puesto.label }} {{ form.puesto() }}</div>
-                <div class="form-group">{{ form.periodo_semanal.label }} {{ form.periodo_semanal(placeholder="Ej: 12/03/2024 | 13/03/2024") }}</div>
-                <div class="form-group">{{ form.nombre_jefe_inmediato.label }} {{ form.nombre_jefe_inmediato() }}</div>
-                <div class="form-group">{{ form.cargo_jefe_inmediato.label }} {{ form.cargo_jefe_inmediato() }}</div>
-                <div class="form-group full-width">{{ form.proyecto_actual.label }} {{ form.proyecto_actual() }}</div>
-                <div class="form-group full-width">{{ form.actividades.label }} {{ form.actividades() }}</div>
-                <div class="form-group">{{ form.herramientas_utilizadas.label }} {{ form.herramientas_utilizadas() }}</div>
-                <div class="form-group">{{ form.status.label }} {{ form.status() }}</div>
-                <div class="form-group">{{ form.entregable_generado.label }} {{ form.entregable_generado() }}</div>
-                <div class="form-group">{{ form.medio_entregable.label }} {{ form.medio_entregable() }}</div>
-                <div class="form-group full-width">{{ form.incidencias.label }} {{ form.incidencias() }}</div>
+            
+            <div class="workspace">
+                
+                <!-- COLUMNA IZQUIERDA: INFORMACIÓN DE LA FILA -->
+                <div class="card">
+                    <h2>Datos del Reporte</h2>
+                    
+                    <div class="form-grid">
+                        <!-- FILA 1 -->
+                        <div class="form-group">
+                            {{ form.nombre_completo.label }}
+                            {{ form.nombre_completo() }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.empresa.label }}
+                            {{ form.empresa() }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.puesto.label }}
+                            {{ form.puesto() }}
+                        </div>
+
+                        <!-- FILA 2 -->
+                        <div class="form-group">
+                            {{ form.proyecto_actual.label }}
+                            {{ form.proyecto_actual() }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.nombre_jefe_inmediato.label }}
+                            {{ form.nombre_jefe_inmediato() }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.cargo_jefe_inmediato.label }}
+                            {{ form.cargo_jefe_inmediato() }}
+                        </div>
+                        
+                        <!-- FILA 3 -->
+                        <div class="form-group">
+                            <label for="periodo_semanal">Fecha de la actividad</label>
+                            <div style="position: relative;">
+                                {{ form.periodo_semanal(id="periodo_semanal_picker", style="display: none;") }}
+                                <button type="button" id="calendar_trigger_btn" class="custom-trigger">
+                                    <span id="calendar_display_text" class="trigger-text">Cargando fechas...</span>
+                                    <svg style="width: 18px; height: 18px; fill: #007bff;" viewBox="0 0 24 24">
+                                        <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM9 14H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2zm-8 4H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2z"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            {{ form.herramientas_utilizadas.label }}
+                            {{ form.herramientas_utilizadas() }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.entregable_generado.label }}
+                            {{ form.entregable_generado() }}
+                        </div>
+                        
+                        <!-- FILA 4 -->
+                        <div class="form-group">
+                            {{ form.medio_entregable.label }}
+                            {{ form.medio_entregable() }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.status.label }}
+                            {{ form.status() }}
+                        </div>
+                        <div class="form-group">
+                            <!-- Relleno simétrico -->
+                        </div>
+                        
+                        <!-- FILA 5 (TEXTAREAS LADO A LADO) -->
+                        <div class="form-group span-2">
+                            {{ form.actividades.label }}
+                            {{ form.actividades() }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.incidencias.label }}
+                            {{ form.incidencias() }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- COLUMNA DERECHA: ACCIONES -->
+                <div class="action-column">
+                    <div class="card action-card">
+                        <button type="submit" class="btn-submit">Actualizar bitácora</button>
+                        <a href="{{ url_for('main.admin_dashboard') }}" class="btn-back-link">— Cancelar y volver</a>
+                    </div>
+                </div>
+
             </div>
-            {{ form.submit(class="btn-submit") }}
         </form>
-        <a href="{{ url_for('main.admin_dashboard') }}" class="btn-back">← Cancelar y volver</a>
     </div>
+
+    <!-- SCRIPTS PARA CALENDARIO -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/es.js"></script>
+    <script>
+        const fp = flatpickr("#periodo_semanal_picker", {
+            mode: "multiple",
+            dateFormat: "d/m/Y",
+            locale: "es",
+            conjunction: " | ",
+            disableMobile: true,
+            positionElement: document.getElementById("calendar_trigger_btn"),
+            onChange: function(selectedDates, dateStr, instance) {
+                actualizarTextoBoton(selectedDates);
+            },
+            onReady: function(selectedDates, dateStr, instance) {
+                actualizarTextoBoton(selectedDates);
+            }
+        });
+
+        function actualizarTextoBoton(selectedDates) {
+            const btnText = document.getElementById("calendar_display_text");
+            if (selectedDates.length === 0) {
+                btnText.innerText = "Ningún día seleccionado";
+                btnText.style.color = "#64748b";
+            } else if (selectedDates.length === 1) {
+                btnText.innerText = "1 día (" + flatpickr.formatDate(selectedDates[0], "d/m/Y") + ")";
+                btnText.style.color = "#007bff";
+            } else {
+                btnText.innerText = selectedDates.length + " días seleccionados";
+                btnText.style.color = "#007bff";
+            }
+        }
+
+        document.getElementById("calendar_trigger_btn").addEventListener("click", function() {
+            fp.open();
+        });
+    </script>
+
 </body>
 </html>

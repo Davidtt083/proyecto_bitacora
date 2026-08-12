@@ -12,7 +12,7 @@ class BitacoraForm(FlaskForm):
         ('Independiente', 'Trabajador independiente')
     ], validators=[DataRequired()])
     puesto = StringField('Puesto / cargo', validators=[DataRequired()])
-    periodo_semanal = StringField('Periodo semanal (ej. Lun 02 - Vie 06 Oct)', validators=[DataRequired()])
+    periodo_semanal = StringField('Fecha de la actividad', validators=[DataRequired()])
     
     nombre_jefe_inmediato = StringField('Nombre del jefe directo', validators=[DataRequired()])
     cargo_jefe_inmediato = StringField('Cargo del jefe directo', validators=[DataRequired()])
@@ -81,7 +81,7 @@ class EditReportAdminForm(FlaskForm):
     cargo_jefe_inmediato = StringField('Cargo del jefe', validators=[DataRequired()])
     
     # Lo dejamos como texto libre para que el admin pueda corregir la cadena de fechas fácilmente
-    periodo_semanal = StringField('Días laborados (separados por |)', validators=[DataRequired()]) 
+    periodo_semanal = StringField('Fecha de la actividad (DD/MM/YYYY)', validators=[DataRequired()])
     
     proyecto_actual = StringField('Proyecto actual', validators=[DataRequired()])
     actividades = TextAreaField('Actividades realizadas', validators=[DataRequired()])

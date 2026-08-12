@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Reporte de Bitácoras - {{ usuario.nombre }}</title>
+    <style>
+        @page {
+            size: A4 landscape; /* Formato horizontal para optimizar el espacio de las columnas */
+            margin: 1cm;
+        }
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 8px; 
+            color: #333;
+        }
+        h2 {
+            color: #2c3e50;
+            margin-top: 0;
+            margin-bottom: 5px;
+        }
+        .subtitle {
+            font-size: 10px;
+            color: #7f8c8d;
+            margin-bottom: 15px;
+        }
+        
+        /* Tarjeta de perfil en PDF (Usamos tablas para garantizar compatibilidad con xhtml2pdf) */
+        .profile-card {
+            background-color: #f8fafc;
+            border: 1px solid #cbd5e1;
+            padding: 8px;
+            margin-bottom: 15px;
+        }
+        .profile-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .profile-table td {
+            border: none;
+            padding: 4px;
+            font-size: 8px;
+            vertical-align: top;
+        }
+        .label {
+            font-weight: bold;
+            color: #64748b;
+            text-transform: uppercase;
+            font-size: 7px;
+        }
+        .value {
+            color: #1e293b;
+            font-weight: bold;
+        }
+
+        /* Tabla Principal */
+        .main-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .main-table th, .main-table td {
+            border: 1px solid #94a3b8;
+            padding: 6px;
+            text-align: left;
+            vertical-align: top;
+            word-wrap: break-word;
+        }
+        .main-table th {
+            background-color: #475569;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+            font-size: 8px;
+        }
+        .text-center { text-align: center; }
+        .texto-largo {
+            font-size: 7.5px;
+            line-height: 1.2;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Reporte Individual de Bitácoras</h2>
+    <div class="subtitle">Consultor especializado: <strong>{{ usuario.nombre }}</strong></div>
+
+    <!-- Sección Informativa del Consultor -->
+    <div class="profile-card">
+        <table class="profile-table">
+            <tr>
+                <td style="width: 25%;">
+                    <span class="label">Puesto / Cargo</span><br>
+                    <span class="value">{{ usuario.puesto or '-' }}</span>
+                </td>
+                <td style="width: 25%;">
+                    <span class="label">Teléfono</span><br>
+                    <span class="value">{{ usuario.telefono or 'N/A' }}</span>
+                </td>
+                <td style="width: 25%;">
+                    <span class="label">Empresa Cliente</span><br>
+                    <span class="value">{{ usuario.empresa or '-' }}</span>
+                </td>
+                <td style="width: 25%;">
+                    <span class="label">Empresa Origen</span><br>
+                    <span class="value">{{ usuario.empresa_origen or '-' }}</span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <span class="label">Estatus Usuario</span><br>
+                    <span class="value">{% if usuario.activo %}Vigente{% else %}No Vigente{% endif %}</span>
+                </td>
+                <td>
+                    <span class="label">Proyecto Actual</span><br>
+                    <span class="value">{{ usuario.proyecto_actual or '-' }}</span>
+                </td>
+                <td>
+                    <span class="label">Jefe Directo</span><br>
+                    <span class="value">{{ usuario.jefe_directo or '-' }}</span>
+                </td>
+                <td>
+                    <span class="label">Cargo Jefe</span><br>
+                    <span class="value">{{ usuario.cargo_jefe or '-' }}</span>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Tabla Simplificada de Bitácoras -->
+    <table class="main-table">
+        <thead>
+            <tr>
+                <th style="width: 12%;">Periodo del reporte</th>
+                <th style="width: 12%;">Fechas específicas</th>
+                <th style="width: 8%; text-align: center;">Días laborados</th>
+                <th style="width: 30%;">Actividades realizadas</th>
+                <th style="width: 11%;">Herramientas</th>
+                <th style="width: 11%;">Entregable generado</th>
+                <th style="width: 8%;">Medio</th>
+                <th style="width: 8%;">Incidencias</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in reportes %}
+            <tr>
+                <td class="text-center" style="font-weight: bold; color: #0056b3;">
+                    {{ r.rango_periodo }}
+                </td>
+                <td class="texto-largo">{{ r.fechas_especificas }}</td>
+                <td class="text-center">{{ r.dias_contados }} días</td>
+                <td class="texto-largo">{{ r.actividades }}</td>
+                <td class="texto-largo">{{ r.herramientas_utilizadas or '-' }}</td>
+                <td class="texto-largo">{{ r.entregable_generado or '-' }}</td>
+                <td class="texto-largo">{{ r.medio_entregable or '-' }}</td>
+                <td class="texto-largo" style="color: #dc3545;">{{ r.incidencias or 'Ninguna' }}</td>
+            </tr>
+            {% endfor %}
+            {% if not reportes %}
+            <tr>
+                <td colspan="8" class="text-center" style="padding: 20px; font-size: 10px;">No se encontraron registros de bitácoras para este usuario.</td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+
+</body>
+</html>

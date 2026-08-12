@@ -59,11 +59,11 @@
     <table>
         <thead repeat="1">
             <tr>
-                <th style="width: 6%;">Periodo semanal</th>
-                <th style="width: 9%;">Nombre</th>
+                <th style="width: 8%;">Periodo del reporte</th>
+                <th style="width: 8%;">Fechas específicas</th>
+                <th style="width: 8%;">Nombre</th>
                 <th style="width: 7%;">Empresa</th>
-                <th style="width: 7%;">Puesto</th>
-                <th style="width: 4%;">Días</th>
+                <th style="width: 4%;">Días laborados</th>
                 <th style="width: 9%;">Jefe / Cargo</th>
                 <th style="width: 9%;">Proyecto</th>
                 <th style="width: 5%;">Status</th>
@@ -76,26 +76,26 @@
         <tbody>
             {% for r in reportes %}
             <tr>
-                <td class="text-center" style="font-weight: bold; color: #333;">{{ r.rango_periodo }}</td>
+                <!-- USAMOS LA VARIABLE CORRECTA 'r' PARA EVITAR EL ERROR -->
+                <td class="text-center" style="font-weight: bold; color: #333;">
+                    <span style="font-weight: bold; color: #0056b3;">{{ r.rango_periodo }}</span>
+                </td>
+                <td class="texto-largo">{{ r.fechas_especificas }}</td>
                 <td><strong>{{ r.nombre_completo }}</strong></td>
                 <td>{{ r.empresa }}</td>
-                <td>{{ r.puesto }}</td>
-                <td class="text-center">{{ r.dias_contados }}</td>
+                <td class="text-center">{{ r.dias_contados }} días</td>
                 <td>{{ r.nombre_jefe_inmediato }}<br><span style="color: #555;">{{ r.cargo_jefe_inmediato }}</span></td>
                 <td>{{ r.proyecto_actual }}</td>
                 <td class="text-center">{{ r.status }}</td>
                 
-                <!-- AQUÍ ESTÁ LA MAGIA: Si el texto tiene más de 300 caracteres, lo corta. Si no, lo muestra completo -->
                 <td class="texto-largo">
                     {{ r.actividades[:300] + '...' if r.actividades|length > 300 else r.actividades }}
                 </td>
                 
                 <td class="texto-largo">{{ r.herramientas_utilizadas or '-' }}</td>
                 <td class="texto-largo" style="word-break: break-all;">
-                    <!-- Corta el nombre del entregable a 20 caracteres -->
                     {{ (r.entregable_generado[:20] + '...') if r.entregable_generado and r.entregable_generado|length > 20 else (r.entregable_generado or '-') }}
                     <br>
-                    <!-- Corta el Link (URL) a 25 caracteres máximo para que quepa a la fuerza -->
                     <span style="color: #555;">
                         {{ (r.medio_entregable[:25] + '...') if r.medio_entregable and r.medio_entregable|length > 25 else (r.medio_entregable or '') }}
                     </span>

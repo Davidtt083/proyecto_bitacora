@@ -45,8 +45,13 @@ def login():
         if user is None:
             flash('El correo electrónico no está registrado.', 'danger')
             return redirect(url_for('auth.login'))
+            
+        # --- NUEVA VALIDACIÓN: ¿EL USUARIO ESTÁ ACTIVO? ---
+        if not user.activo:
+            flash('Tu cuenta se encuentra inactiva (No vigente). Por favor, contacta al administrador.', 'danger')
+            return redirect(url_for('auth.login'))
         
-        # VALIDACIÓN 2: ¿La contraseña es correcta?
+        # VALIDACIÓN 3: ¿La contraseña es correcta?
         if not user.check_password(form.password.data):
             flash('La contraseña es incorrecta. Por favor, verifica tus datos.', 'danger')
             return redirect(url_for('auth.login'))
