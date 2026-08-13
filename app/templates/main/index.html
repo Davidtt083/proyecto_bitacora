@@ -146,6 +146,13 @@
             text-align: center;
         }
 
+        .readonly-field {
+            background-color: #e9ecef !important;
+            cursor: not-allowed;
+            color: #64748b;
+            border-color: #e2e8f0;
+        }
+
         @media (min-width: 1024px) {
             .form-grid {
                 grid-template-columns: repeat(3, 1fr);
@@ -278,73 +285,85 @@
             {{ form.hidden_tag() }}
 
             <div class="form-grid">
+                <!-- Nombre completo (Solo lectura) -->
                 <div class="form-group">
                     {{ form.nombre_completo.label }}
-                    {{ form.nombre_completo() }}
+                    {{ form.nombre_completo(readonly=True, class="readonly-field") }}
                 </div>
+
+                <!-- Empresa cliente (Inhabilitado + Campo oculto de respaldo para WTForms) -->
                 <div class="form-group">
                     {{ form.empresa.label }}
-                    {{ form.empresa() }}
+                    {{ form.empresa(disabled=True, class="readonly-field") }}
+                    <input type="hidden" name="empresa" value="{{ current_user.empresa }}">
                 </div>
 
+                <!-- Puesto / cargo (Solo lectura) -->
                 <div class="form-group">
                     {{ form.puesto.label }}
-                    {{ form.puesto() }}
+                    {{ form.puesto(readonly=True, class="readonly-field") }}
                 </div>
 
+                <!-- Fecha de la actividad (Este se mantiene editable para el usuario) -->
                 <div class="form-group">
                     <label for="periodo_semanal">Fecha de la actividad</label>
                     <div class="input-icon-wrapper">
-                        <!-- Icono SVG de Calendario -->
                         <svg class="calendar-icon" viewBox="0 0 24 24">
-                            <path
-                                d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM9 14H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2zm-8 4H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2z">
-                            </path>
+                            <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM9 14H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2zm-8 4H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2z"></path>
                         </svg>
-                        {{ form.periodo_semanal(id="datepicker", placeholder="Clic para marcar días...", readonly=True)
-                        }}
+                        {{ form.periodo_semanal(id="datepicker", placeholder="Clic para marcar días...", readonly=True) }}
                     </div>
                 </div>
 
+                <!-- Nombre del jefe directo (Solo lectura) -->
                 <div class="form-group">
                     {{ form.nombre_jefe_inmediato.label }}
-                    {{ form.nombre_jefe_inmediato() }}
+                    {{ form.nombre_jefe_inmediato(readonly=True, class="readonly-field") }}
                 </div>
+
+                <!-- Cargo del jefe directo (Solo lectura) -->
                 <div class="form-group">
                     {{ form.cargo_jefe_inmediato.label }}
-                    {{ form.cargo_jefe_inmediato() }}
+                    {{ form.cargo_jefe_inmediato(readonly=True, class="readonly-field") }}
                 </div>
 
+                <!-- Proyecto actual (Solo lectura) -->
                 <div class="form-group full-width">
                     {{ form.proyecto_actual.label }}
-                    {{ form.proyecto_actual() }}
+                    {{ form.proyecto_actual(readonly=True, class="readonly-field") }}
                 </div>
 
+                <!-- Actividades (Este se mantiene editable para el usuario) -->
                 <div class="form-group full-width">
                     {{ form.actividades.label }}
                     {{ form.actividades() }}
                 </div>
 
+                <!-- Herramientas (Este se mantiene editable para el usuario) -->
                 <div class="form-group">
                     {{ form.herramientas_utilizadas.label }}
                     {{ form.herramientas_utilizadas() }}
                 </div>
+
+                <!-- Estatus (Este se mantiene editable para el usuario) -->
                 <div class="form-group">
                     {{ form.status.label }}
                     {{ form.status() }}
                 </div>
 
+                <!-- Entregable generado (Este se mantiene editable para el usuario) -->
                 <div class="form-group">
                     {{ form.entregable_generado.label }}
                     {{ form.entregable_generado() }}
                 </div>
 
-                <!-- ESTE CONTENEDOR SE OCULTARÁ/MOSTRARÁ -->
+                <!-- Medio entregable (Este se mantiene editable para el usuario) -->
                 <div class="form-group full-width hidden-field" id="medio-entregable-container">
                     {{ form.medio_entregable.label }}
                     {{ form.medio_entregable(placeholder="Especifique dónde se encuentra el entregable...") }}
                 </div>
 
+                <!-- Incidencias (Este se mantiene editable para el usuario) -->
                 <div class="form-group full-width">
                     {{ form.incidencias.label }}
                     {{ form.incidencias() }}
