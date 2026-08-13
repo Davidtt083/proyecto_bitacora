@@ -1,29 +1,34 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <title>Reporte de Bitácoras - {{ usuario.nombre }}</title>
     <style>
         @page {
-            size: A4 landscape; /* Formato horizontal para optimizar el espacio de las columnas */
+            size: A4 landscape;
+            /* Formato horizontal para optimizar el espacio de las columnas */
             margin: 1cm;
         }
+
         body {
             font-family: Helvetica, Arial, sans-serif;
-            font-size: 8px; 
+            font-size: 8px;
             color: #333;
         }
+
         h2 {
             color: #2c3e50;
             margin-top: 0;
             margin-bottom: 5px;
         }
+
         .subtitle {
             font-size: 10px;
             color: #7f8c8d;
             margin-bottom: 15px;
         }
-        
+
         /* Tarjeta de perfil en PDF (Usamos tablas para garantizar compatibilidad con xhtml2pdf) */
         .profile-card {
             background-color: #f8fafc;
@@ -31,22 +36,26 @@
             padding: 8px;
             margin-bottom: 15px;
         }
+
         .profile-table {
             width: 100%;
             border-collapse: collapse;
         }
+
         .profile-table td {
             border: none;
             padding: 4px;
             font-size: 8px;
             vertical-align: top;
         }
+
         .label {
             font-weight: bold;
             color: #64748b;
             text-transform: uppercase;
             font-size: 7px;
         }
+
         .value {
             color: #1e293b;
             font-weight: bold;
@@ -57,13 +66,16 @@
             width: 100%;
             border-collapse: collapse;
         }
-        .main-table th, .main-table td {
+
+        .main-table th,
+        .main-table td {
             border: 1px solid #94a3b8;
             padding: 6px;
             text-align: left;
             vertical-align: top;
             word-wrap: break-word;
         }
+
         .main-table th {
             background-color: #475569;
             color: white;
@@ -71,13 +83,18 @@
             text-align: center;
             font-size: 8px;
         }
-        .text-center { text-align: center; }
+
+        .text-center {
+            text-align: center;
+        }
+
         .texto-largo {
             font-size: 7.5px;
             line-height: 1.2;
         }
     </style>
 </head>
+
 <body>
 
     <h2>Reporte Individual de Bitácoras</h2>
@@ -149,18 +166,57 @@
                 <td class="text-center">{{ r.dias_contados }} días</td>
                 <td class="texto-largo">{{ r.actividades }}</td>
                 <td class="texto-largo">{{ r.herramientas_utilizadas or '-' }}</td>
-                <td class="texto-largo">{{ r.entregable_generado or '-' }}</td>
-                <td class="texto-largo">{{ r.medio_entregable or '-' }}</td>
+                <!-- Columna Entregable -->
+                <td class="texto-largo" style="word-wrap: break-word;">
+                    {% set ent = r.entregable_generado or '' %}
+                    {% if ent and (ent.startswith('http://') or ent.startswith('https://') or ent.startswith('www.')) %}
+                    <a href="{{ ent if ent.startswith('http') else 'http://' ~ ent }}" target="_blank"
+                        style="color: #0056b3; font-weight: bold; text-decoration: none;">
+                        🔗 Abrir entregable
+                    </a>
+                    {% else %}
+                    {{ ent or '-' }}
+                    {% endif %}
+                </td>
+
+                <!-- Columna Medio -->
+                <!-- Columna Entregable (Texto completo o Enlace corto interactivo) -->
+                <td class="texto-largo" style="word-wrap: break-word;">
+                    {% set ent = r.entregable_generado or '' %}
+                    {% if ent and (ent.startswith('http://') or ent.startswith('https://') or ent.startswith('www.')) %}
+                    <a href="{{ ent if ent.startswith('http') else 'http://' ~ ent }}" target="_blank"
+                        style="color: #0056b3; font-weight: bold; text-decoration: none;">
+                        🔗 Abrir entregable
+                    </a>
+                    {% else %}
+                    {{ ent or '-' }}
+                    {% endif %}
+                </td>
+
+                <!-- Columna Medio (Texto completo o Enlace corto interactivo) -->
+                <td class="texto-largo" style="word-wrap: break-word;">
+                    {% set med = r.medio_entregable or '' %}
+                    {% if med and (med.startswith('http://') or med.startswith('https://') or med.startswith('www.')) %}
+                    <a href="{{ med if med.startswith('http') else 'http://' ~ med }}" target="_blank"
+                        style="color: #0056b3; font-weight: bold; text-decoration: none;">
+                        🔗 Ver medio / link
+                    </a>
+                    {% else %}
+                    {{ med or '-' }}
+                    {% endif %}
+                </td>
                 <td class="texto-largo" style="color: #dc3545;">{{ r.incidencias or 'Ninguna' }}</td>
             </tr>
             {% endfor %}
             {% if not reportes %}
             <tr>
-                <td colspan="8" class="text-center" style="padding: 20px; font-size: 10px;">No se encontraron registros de bitácoras para este usuario.</td>
+                <td colspan="8" class="text-center" style="padding: 20px; font-size: 10px;">No se encontraron registros
+                    de bitácoras para este usuario.</td>
             </tr>
             {% endif %}
         </tbody>
     </table>
 
 </body>
+
 </html>

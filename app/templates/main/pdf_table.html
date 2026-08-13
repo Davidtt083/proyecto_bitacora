@@ -1,49 +1,59 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <title>Reporte Tabla de Bitácoras</title>
     <style>
         @page {
-            size: A4 landscape; /* Formato horizontal */
+            size: A4 landscape;
+            /* Formato horizontal */
             margin: 1cm;
         }
+
         body {
             font-family: Helvetica, Arial, sans-serif;
-            font-size: 8px; 
+            font-size: 8px;
             color: #333;
         }
+
         h2 {
             text-align: center;
-            margin-top: 0; 
+            margin-top: 0;
             margin-bottom: 10px;
             color: #5a5a5a;
         }
-        
+
         table {
             width: 100%;
             border-collapse: collapse;
         }
+
         /* Dejamos que el sistema decida libremente cómo cortar las filas */
         tr {
-            page-break-inside: auto; 
+            page-break-inside: auto;
         }
-        
-        th, td {
+
+        th,
+        td {
             border: 1px solid #666;
-            padding: 4px; 
+            padding: 4px;
             text-align: left;
             vertical-align: top;
             word-wrap: break-word;
         }
+
         th {
             background-color: #5a5a5a;
             color: white;
             font-weight: bold;
             text-align: center;
         }
-        .text-center { text-align: center; }
-        
+
+        .text-center {
+            text-align: center;
+        }
+
         /* Hacemos la letra un poco más pequeña solo para textos muy largos */
         .texto-largo {
             font-size: 7.5px;
@@ -52,6 +62,7 @@
         }
     </style>
 </head>
+
 <body>
 
     <h2>Reporte de Bitácoras (Vista de Tabla)</h2>
@@ -76,41 +87,74 @@
         <tbody>
             {% for r in reportes %}
             <tr>
-                <!-- USAMOS LA VARIABLE CORRECTA 'r' PARA EVITAR EL ERROR -->
+                <!-- 1. Periodo -->
                 <td class="text-center" style="font-weight: bold; color: #333;">
                     <span style="font-weight: bold; color: #0056b3;">{{ r.rango_periodo }}</span>
                 </td>
+                <!-- 2. Fechas específicas -->
                 <td class="texto-largo">{{ r.fechas_especificas }}</td>
+                <!-- 3. Nombre del consultor -->
                 <td><strong>{{ r.nombre_completo }}</strong></td>
+                <!-- 4. Empresa cliente -->
                 <td>{{ r.empresa }}</td>
+                <!-- 5. Días laborados -->
                 <td class="text-center">{{ r.dias_contados }} días</td>
+                <!-- 6. Jefe y su cargo -->
                 <td>{{ r.nombre_jefe_inmediato }}<br><span style="color: #555;">{{ r.cargo_jefe_inmediato }}</span></td>
+                <!-- 7. Proyecto -->
                 <td>{{ r.proyecto_actual }}</td>
+                <!-- 8. Estatus de la actividad -->
                 <td class="text-center">{{ r.status }}</td>
-                
+
+                <!-- 9. Actividades -->
                 <td class="texto-largo">
                     {{ r.actividades[:300] + '...' if r.actividades|length > 300 else r.actividades }}
                 </td>
-                
+
+                <!-- 10. Herramientas -->
                 <td class="texto-largo">{{ r.herramientas_utilizadas or '-' }}</td>
-                <td class="texto-largo" style="word-break: break-all;">
-                    {{ (r.entregable_generado[:20] + '...') if r.entregable_generado and r.entregable_generado|length > 20 else (r.entregable_generado or '-') }}
+
+                <!-- 11. Entregable / Medio (Formato inteligente) -->
+                <td class="texto-largo" style="word-wrap: break-word;">
+                    <!-- Entregable -->
+                    {% set ent = r.entregable_generado or '' %}
+                    {% if ent and (ent.startswith('http://') or ent.startswith('https://') or ent.startswith('www.')) %}
+                    <a href="{{ ent if ent.startswith('http') else 'http://' ~ ent }}" target="_blank"
+                        style="color: #0056b3; font-weight: bold; text-decoration: none;">
+                        🔗 Entregable
+                    </a>
+                    {% else %}
+                    {{ ent or '-' }}
+                    {% endif %}
                     <br>
+                    <!-- Medio -->
+                    {% set med = r.medio_entregable or '' %}
+                    {% if med and (med.startswith('http://') or med.startswith('https://') or med.startswith('www.')) %}
+                    <a href="{{ med if med.startswith('http') else 'http://' ~ med }}" target="_blank"
+                        style="color: #0056b3; font-weight: bold; text-decoration: none;">
+                        🔗 Medio / Link
+                    </a>
+                    {% else %}
                     <span style="color: #555;">
-                        {{ (r.medio_entregable[:25] + '...') if r.medio_entregable and r.medio_entregable|length > 25 else (r.medio_entregable or '') }}
+                        {{ med or '' }}
                     </span>
+                    {% endif %}
                 </td>
+
+                <!-- 12. Incidencias (Esta es la columna que se había extraviado) -->
                 <td class="texto-largo">{{ r.incidencias or 'Ninguna' }}</td>
             </tr>
             {% endfor %}
-            
+
             {% if not reportes %}
             <tr>
-                <td colspan="12" class="text-center" style="padding: 20px; font-size: 12px;">No se encontraron registros con los filtros actuales.</td>
+                <td colspan="12" class="text-center" style="padding: 20px; font-size: 12px;">No se encontraron registros
+                    con los filtros actuales.</td>
             </tr>
             {% endif %}
         </tbody>
     </table>
 
 </body>
+
 </html>

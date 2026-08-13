@@ -212,6 +212,14 @@
             max-width: 400px;
             text-align: center;
         }
+
+        /* Truncado inteligente para textos largos */
+        .text-truncate-col {
+            max-width: 160px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
     </style>
 </head>
 
@@ -226,7 +234,8 @@
             </div>
             <div style="display: flex; gap: 10px;">
                 <a href="{{ url_for('main.admin_home') }}" class="btn btn-back">← Volver al inicio</a>
-                <button type="button" class="btn" style="background: #ef233c; color: white;" onclick="openPdfModal()">
+                <button type="button" class="btn" style="background: #ef233c; color: white;"
+                    onclick="descargarInformePdfDirecto()">
                     📄 Generar informe PDF
                 </button>
                 <button type="button" class="btn" style="background: #ef233c; color: white;"
@@ -390,8 +399,37 @@
 
                         <td>{{ reporte.actividades }}</td>
                         <td>{{ reporte.herramientas_utilizadas or '-' }}</td>
-                        <td>{{ reporte.entregable_generado or '-' }}</td>
-                        <td>{{ reporte.medio_entregable or '-' }}</td>
+                        <!-- Columna Entregable Generado -->
+                        <td>
+                            <div class="text-truncate-col" title="{{ reporte.entregable_generado or '-' }}">
+                                {% set ent = reporte.entregable_generado or '' %}
+                                {% if ent and (ent.startswith('http://') or ent.startswith('https://') or
+                                ent.startswith('www.')) %}
+                                <a href="{{ ent if ent.startswith('http') else 'http://' ~ ent }}" target="_blank"
+                                    style="color: #0056b3; font-weight: bold; text-decoration: none;">
+                                    🔗 Abrir entregable
+                                </a>
+                                {% else %}
+                                {{ ent or '-' }}
+                                {% endif %}
+                            </div>
+                        </td>
+
+                        <!-- Columna Medio Entregable -->
+                        <td>
+                            <div class="text-truncate-col" title="{{ reporte.medio_entregable or '-' }}">
+                                {% set med = reporte.medio_entregable or '' %}
+                                {% if med and (med.startswith('http://') or med.startswith('https://') or
+                                med.startswith('www.')) %}
+                                <a href="{{ med if med.startswith('http') else 'http://' ~ med }}" target="_blank"
+                                    style="color: #0056b3; font-weight: bold; text-decoration: none;">
+                                    🔗 Ver medio / link
+                                </a>
+                                {% else %}
+                                {{ med or '-' }}
+                                {% endif %}
+                            </div>
+                        </td>
                         <td style="color: var(--danger);">{{ reporte.incidencias or 'Ninguna' }}</td>
                         <td style="text-align: center;">
                             <div style="display: flex; flex-direction: column; gap: 6px;">
@@ -415,26 +453,15 @@
         </div>
     </div>
 
-    <!-- MODAL PARA PDF -->
-    <div id="pdfModal" class="modal-overlay">
-        <div class="modal-content">
-            <h3 style="margin-top: 0; color: #333;">Generar Informe PDF</h3>
-            <p style="font-size: 13px; color: #555; text-align: left;">Ingrese el nombre del responsable de la cuenta:
-            </p>
-            <input type="text" id="responsableInput" placeholder="Nombre completo..."
-                style="width: 100%; padding: 10px; margin-bottom: 20px; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box;">
-            <div style="display: flex; gap: 10px;">
-                <button class="btn btn-search" style="flex: 1;" onclick="descargarPdf()">Descargar PDF</button>
-                <button class="btn btn-back" style="flex: 1;" onclick="closePdfModal()">Cancelar</button>
-            </div>
-        </div>
-    </div>
 
     <!-- SCRIPTS -->
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://npmcdn.com/flatpickr/dist/l10n/es.js"></script>
+   <!-- SCRIPTS -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/es.js"></script>
     <script>
-        // Inicializar el calendario de Días Específicos
+        // 1. Inicializar el calendario de Días Específicos (Flatpickr)
         flatpickr("#fechas_especificas", {
             mode: "multiple",
             dateFormat: "d/m/Y",
@@ -442,7 +469,7 @@
             conjunction: ", "
         });
 
-        // Lógica para mostrar/ocultar Rango o Días Específicos
+        // 2. Lógica para mostrar/ocultar Rango o Días Específicos
         function toggleFiltrosFechas() {
             const selector = document.getElementById("tipo_filtro").value;
             const divRango = document.getElementById("contenedor_rango");
@@ -464,7 +491,7 @@
 
         document.addEventListener('DOMContentLoaded', toggleFiltrosFechas);
 
-        // Validación de fechas inicio-fin
+        // 3. Validación de fechas inicio-fin
         function validarFechas() {
             const inicio = document.getElementById('fecha_inicio').value;
             const fin = document.getElementById('fecha_fin').value;
@@ -474,30 +501,12 @@
             }
         }
 
-        // LÓGICA DE PDF (Construcción inteligente de URLs)
-        function openPdfModal() {
-            const empresaSelect = document.querySelector('select[name="empresa"]');
-            if (!empresaSelect.value) {
-                alert("⚠️ ATENCIÓN: Debe seleccionar una Empresa Cliente específica en los filtros.");
-                return;
-            }
-            document.getElementById('pdfModal').style.display = 'flex';
-            document.getElementById('responsableInput').focus();
-        }
+        // 4. --- SISTEMA DE CONSTRUCCIÓN Y DESCARGA DIRECTA DE PDFS (Actualizado) ---
 
-        function closePdfModal() {
-            document.getElementById('pdfModal').style.display = 'none';
-        }
-
-        function construirUrlPDF(rutaBase, agregarResponsable = false) {
+        // Función auxiliar para construir la URL del PDF con los filtros activos
+        function construirUrlPDF(rutaBase) {
             let url = rutaBase + "?q={{ search_query }}&empresa={{ empresa_filter }}&status={{ status_filter }}";
             url = url.replace(/&amp;/g, '&');
-
-            if (agregarResponsable) {
-                const responsable = document.getElementById('responsableInput').value.trim();
-                if (!responsable) return null;
-                url += "&responsable=" + encodeURIComponent(responsable);
-            }
 
             const tipo = document.getElementById('tipo_filtro').value;
             url += "&tipo_filtro=" + encodeURIComponent(tipo);
@@ -514,23 +523,24 @@
             return url;
         }
 
-        // Descargas de PDF
-        function descargarPdf() {
-            const url = construirUrlPDF("{{ url_for('main.export_pdf') }}", true);
-            if (!url) {
-                alert("Por favor, ingrese el nombre del responsable.");
+        // Botón 1: Generar informe PDF (Firma del Administrador actual directo)
+        function descargarInformePdfDirecto() {
+            const empresaSelect = document.querySelector('select[name="empresa"]');
+            if (!empresaSelect.value) {
+                alert("⚠️ ATENCIÓN: Debe seleccionar una Empresa Cliente específica en los filtros.");
                 return;
             }
+            const url = construirUrlPDF("{{ url_for('main.export_pdf') }}");
             window.location.href = url;
-            closePdfModal();
         }
 
+        // Botón 2: Descargar vista actual (PDF de la Tabla Horizontal)
         function descargarTablaPdf() {
-            const url = construirUrlPDF("{{ url_for('main.export_table_pdf') }}", false);
+            const url = construirUrlPDF("{{ url_for('main.export_table_pdf') }}");
             window.location.href = url;
         }
 
-        // --- SISTEMA DE ORDENAMIENTO DE DOBLE FLECHA APILADA ---
+        // 5. --- SISTEMA DE ORDENAMIENTO DE DOBLE FLECHA APILADA ---
         document.addEventListener("DOMContentLoaded", function () {
             const table = document.querySelector("table");
             const headers = table.querySelectorAll("thead th");

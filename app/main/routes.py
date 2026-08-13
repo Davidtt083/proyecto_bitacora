@@ -392,7 +392,9 @@ def export_pdf():
     fecha_inicio = request.args.get('fecha_inicio', '')
     fecha_fin = request.args.get('fecha_fin', '')
     fechas_especificas = request.args.get('fechas_especificas', '')
-    responsable = request.args.get('responsable', '___________________________')
+    
+    # El responsable ahora es automáticamente el administrador logueado
+    responsable = current_user.nombre
 
     if not empresa_filter:
         flash('Debe seleccionar una empresa cliente específica para generar el informe.', 'warning')
@@ -421,18 +423,23 @@ def export_pdf():
     reportes_base = query.order_by(Bitacora.timestamp.desc()).all()
     reportes = filtrar_reportes_por_fecha(reportes_base, tipo_filtro, fecha_inicio, fecha_fin, fechas_especificas)
 
-    # Determinar Título del PDF
-    informe_mes = "PERIODO GENERAL"
+    # 1. Determinar Título del PDF para el encabezado
+    headline_title = "Informe General"
     if tipo_filtro == 'rango' and (fecha_inicio or fecha_fin):
         if fecha_inicio and fecha_fin:
-            informe_mes = f"DEL {datetime.strptime(fecha_inicio, '%Y-%m-%d').strftime('%d/%m/%Y')} AL {datetime.strptime(fecha_fin, '%Y-%m-%d').strftime('%d/%m/%Y')}"
+            f_ini = datetime.strptime(fecha_inicio, '%Y-%m-%d').strftime('%d/%m/%Y')
+            f_fin = datetime.strptime(fecha_fin, '%Y-%m-%d').strftime('%d/%m/%Y')
+            headline_title = f"Informe del {f_ini} al {f_fin}"
         elif fecha_inicio:
-            informe_mes = f"A PARTIR DEL {datetime.strptime(fecha_inicio, '%Y-%m-%d').strftime('%d/%m/%Y')}"
+            f_ini = datetime.strptime(fecha_inicio, '%Y-%m-%d').strftime('%d/%m/%Y')
+            headline_title = f"Informe a partir del {f_ini}"
         elif fecha_fin:
-            informe_mes = f"HASTA EL {datetime.strptime(fecha_fin, '%Y-%m-%d').strftime('%d/%m/%Y')}"
+            f_fin = datetime.strptime(fecha_fin, '%Y-%m-%d').strftime('%d/%m/%Y')
+            headline_title = f"Informe hasta el {f_fin}"
     elif tipo_filtro == 'especificas' and fechas_especificas:
-        informe_mes = f"DÍAS ESPECÍFICOS: {fechas_especificas}"
+        headline_title = f"Informe de días específicos: {fechas_especificas}"
 
+    # 2. Agrupar consultores y recopilar sus fechas específicas
     consultores_agrupados = {}
     empresa_origen_general = "" 
     
@@ -447,14 +454,45 @@ def export_pdf():
                 'puesto': r.puesto,
                 'jefe': r.nombre_jefe_inmediato,
                 'num_bitacoras': 0,
-                'dias_asignados': 0
+                'dias_asignados': 0,
+                'fechas_especificas_list': []
             }
-                
-        consultores_agrupados[usuario_id]['num_bitacoras'] += 1
         
         if r.periodo_semanal:
-            dias = len([d for d in r.periodo_semanal.split('|') if d.strip()])
-            consultores_agrupados[usuario_id]['dias_asignados'] += dias
+            dias_str = [d.strip() for d in r.periodo_semanal.split('|') if d.strip()]
+            num_dias = len(dias_str)
+            
+            # Ajuste clave: Sumamos el número de días reales a las bitácoras registradas
+            consultores_agrupados[usuario_id]['num_bitacoras'] += num_dias
+            consultores_agrupados[usuario_id]['dias_asignados'] += num_dias
+            consultores_agrupados[usuario_id]['fechas_especificas_list'].extend(dias_str)
+        else:
+            # Fallback de respaldo por si no tiene fechas ingresadas
+            consultores_agrupados[usuario_id]['num_bitacoras'] += 1
+
+    # Dar formato ordenado a las fechas específicas de cada consultor
+    for cid, data in consultores_agrupados.items():
+        if data['fechas_especificas_list']:
+            try:
+                # Ordenar fechas reales de forma cronológica
+                fechas_unicas = sorted(list(set(data['fechas_especificas_list'])), key=lambda x: datetime.strptime(x, '%d/%m/%Y'))
+                data['fechas_especificas'] = ", ".join(fechas_unicas)
+            except ValueError:
+                data['fechas_especificas'] = ", ".join(sorted(list(set(data['fechas_especificas_list']))))
+        else:
+            data['fechas_especificas'] = "-"
+
+    # Dar formato ordenado a las fechas específicas de cada consultor
+    for cid, data in consultores_agrupados.items():
+        if data['fechas_especificas_list']:
+            try:
+                # Ordenar fechas reales de forma cronológica
+                fechas_unicas = sorted(list(set(data['fechas_especificas_list'])), key=lambda x: datetime.strptime(x, '%d/%m/%Y'))
+                data['fechas_especificas'] = ", ".join(fechas_unicas)
+            except ValueError:
+                data['fechas_especificas'] = ", ".join(sorted(list(set(data['fechas_especificas_list']))))
+        else:
+            data['fechas_especificas'] = "-"
 
     if not empresa_origen_general:
         empresa_origen_general = "Krolls"
@@ -466,11 +504,20 @@ def export_pdf():
     hoy = datetime.now()
     fecha_hoy = f"{hoy.day} de {meses_es[hoy.month-1]} de {hoy.year}"
 
+    # 3. Determinar nombre dinámico para la descarga del archivo PDF
+    hoy_str = hoy.strftime('%d-%m-%Y')
+    if tipo_filtro == 'rango':
+        ini_str = datetime.strptime(fecha_inicio.strip(), '%Y-%m-%d').strftime('%d-%m-%Y') if fecha_inicio else "inicio"
+        fin_str = datetime.strptime(fecha_fin.strip(), '%Y-%m-%d').strftime('%d-%m-%Y') if fecha_fin else "fin"
+        filename = f"Informe_mensual[{ini_str}][{fin_str}].pdf"
+    else:
+        filename = f"informemensualpordiasespecificos_{hoy_str}.pdf"
+
     html = render_template('main/pdf_report.html', 
                            lista_consultores=lista_consultores,
                            total_consultores=total_consultores,
                            fecha_hoy=fecha_hoy,
-                           informe_mes=informe_mes,
+                           headline_title=headline_title,
                            empresa_cliente=empresa_filter, 
                            empresa_origen=empresa_origen_general, 
                            responsable=responsable)
@@ -484,7 +531,7 @@ def export_pdf():
 
     response = make_response(result.getvalue())
     response.headers['Content-Type'] = 'application/pdf'
-    response.headers['Content-Disposition'] = 'attachment; filename=informe_mensual.pdf'
+    response.headers['Content-Disposition'] = f'attachment; filename={filename}'
     
     return response
 
