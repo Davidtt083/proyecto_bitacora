@@ -107,8 +107,8 @@
                 <td class="text-center">{{ r.status }}</td>
 
                 <!-- 9. Actividades -->
-                <td class="texto-largo">
-                    {{ r.actividades[:300] + '...' if r.actividades|length > 300 else r.actividades }}
+                <td class="texto-largo" style="word-wrap: break-word;">
+                    {{ r.actividades }}
                 </td>
 
                 <!-- 10. Herramientas -->
