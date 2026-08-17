@@ -220,6 +220,38 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
+
+        /* Scroll horizontal para textos extensos */
+        .scroll-horizontal-text {
+            max-width: 300px;
+            white-space: nowrap;
+            overflow-x: auto;
+            display: block;
+            line-height: 1.4;
+            padding-bottom: 6px;
+            /* Espacio para que no tape el texto la barra */
+        }
+
+        /* Estilización elegante de la barra de desplazamiento */
+        .scroll-horizontal-text::-webkit-scrollbar {
+            height: 4px;
+            /* Barra de desplazamiento muy delgada */
+        }
+
+        .scroll-horizontal-text::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .scroll-horizontal-text::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+            transition: background 0.3s;
+        }
+
+        .scroll-horizontal-text::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
     </style>
 </head>
 
@@ -397,7 +429,12 @@
                             </span>
                         </td>
 
-                        <td>{{ reporte.actividades }}</td>
+                        <!-- Columna de Actividades con Scroll Horizontal -->
+                        <td>
+                            <div class="scroll-horizontal-text" title="{{ reporte.actividades }}">
+                                {{ reporte.actividades }}
+                            </div>
+                        </td>
                         <td>{{ reporte.herramientas_utilizadas or '-' }}</td>
                         <!-- Columna Entregable Generado -->
                         <td>
@@ -450,14 +487,19 @@
                     {% endfor %}
                     {% if not reportes %}
                     <tr>
-                        <td colspan="17" style="text-align: center; padding: 60px; color: #666; background-color: #fafafa;">
-                            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;">
+                        <td colspan="17"
+                            style="text-align: center; padding: 60px; color: #666; background-color: #fafafa;">
+                            <div
+                                style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;">
                                 <!-- Ícono de lupa/búsqueda SVG -->
                                 <svg style="width: 48px; height: 40px; fill: #94a3b8;" viewBox="0 0 24 24">
-                                    <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                                    <path
+                                        d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
                                 </svg>
-                                <span style="font-size: 16px; font-weight: bold; color: #475569;">No hay ningún registro</span>
-                                <span style="font-size: 13px; color: #64748b; margin-top: -5px;">Prueba ajustando los filtros de búsqueda o las fechas seleccionadas.</span>
+                                <span style="font-size: 16px; font-weight: bold; color: #475569;">No hay ningún
+                                    registro</span>
+                                <span style="font-size: 13px; color: #64748b; margin-top: -5px;">Prueba ajustando los
+                                    filtros de búsqueda o las fechas seleccionadas.</span>
                             </div>
                         </td>
                     </tr>
@@ -471,7 +513,7 @@
     <!-- SCRIPTS -->
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://npmcdn.com/flatpickr/dist/l10n/es.js"></script>
-   <!-- SCRIPTS -->
+    <!-- SCRIPTS -->
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://npmcdn.com/flatpickr/dist/l10n/es.js"></script>
     <script>

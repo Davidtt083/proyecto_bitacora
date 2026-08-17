@@ -5,8 +5,8 @@ from wtforms.validators import DataRequired, Email, Optional, URL, Length, Equal
 class BitacoraForm(FlaskForm):
     nombre_completo = StringField('Nombre completo', validators=[DataRequired(), Length(max=100)])
     empresa = SelectField('Empresa cliente', choices=[ 
-        ('Empresa A', 'Empresa A'),
-        ('Empresa B', 'Empresa B'),
+         ('Hyphametrics', 'Hyphametrics'),
+        ('Qualis', 'Qualis'),
         ('Empresa C', 'Empresa C'),
         ('Empresa D', 'Empresa D'),
         ('Independiente', 'Trabajador independiente')
@@ -18,9 +18,12 @@ class BitacoraForm(FlaskForm):
     cargo_jefe_inmediato = StringField('Cargo del jefe directo', validators=[DataRequired()])
     
     proyecto_actual = StringField('Proyecto actual', validators=[DataRequired()])
-    actividades = TextAreaField('Actividades realizadas', validators=[DataRequired()])
+    actividades = TextAreaField('Actividades realizadas', validators=[
+        DataRequired(),
+        Length(max=2700, message="Las actividades no pueden exceder los 2700 caracteres.")
+    ])
     
-    herramientas_utilizadas = StringField('Herramientas utilizadas')
+    herramientas_utilizadas = StringField('Herramientas')
     status = SelectField('Estatus de la actividad', choices=[
         ('En proceso', 'En proceso'),
         ('Finalizado', 'Finalizado')
@@ -28,7 +31,10 @@ class BitacoraForm(FlaskForm):
 
     entregable_generado = StringField('Entregable generado')
     medio_entregable = StringField('Medio entregable (Link, Carpeta, Correo, etc.)')
-    incidencias = TextAreaField('Incidencias / observaciones (opcional)')
+    incidencias = TextAreaField('Incidencias / observaciones (opcional)', validators=[
+        Optional(),
+        Length(max=600, message="Las incidencias no pueden exceder los 600 caracteres.")
+    ])
     
     submit = SubmitField('Guardar reporte de bitácora')
 
@@ -37,8 +43,8 @@ class EditUserAdminForm(FlaskForm):
     email = StringField('Correo electrónico', validators=[DataRequired(), Email()])
     telefono = StringField('Número telefónico', validators=[DataRequired()])
     empresa = SelectField('Empresa', choices=[ 
-        ('Empresa A', 'Empresa A'),
-        ('Empresa B', 'Empresa B'),
+        ('Hyphametrics', 'Hyphametrics'),
+        ('Qualis', 'Qualis'),
         ('Empresa C', 'Empresa C'),
         ('Empresa D', 'Empresa D'),
         ('Independiente', 'Trabajador Independiente')
@@ -70,8 +76,8 @@ class EditUserAdminForm(FlaskForm):
 class EditReportAdminForm(FlaskForm):
     nombre_completo = StringField('Nombre completo', validators=[DataRequired()])
     empresa = SelectField('Empresa cliente', choices=[ 
-        ('Empresa A', 'Empresa A'),
-        ('Empresa B', 'Empresa B'),
+        ('Hyphametrics', 'Hyphametrics'),
+        ('Qualis', 'Qualis'),
         ('Empresa C', 'Empresa C'),
         ('Empresa D', 'Empresa D'),
         ('Independiente', 'Trabajador independiente')

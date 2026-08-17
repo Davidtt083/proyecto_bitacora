@@ -43,6 +43,39 @@
             text-decoration: none;
             border-radius: 6px;
             font-weight: bold;
+            display: inline-block;
+            transition: 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-back:hover {
+            opacity: 0.9;
+        }
+
+        /* ESTILOS DE LA TARJETA DE FILTROS */
+        .filters-card {
+            background: #f8fafc;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            border: 1px solid #e2e8f0;
+        }
+
+        input[type="date"] {
+            padding: 8px 12px;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 13.5px;
+            font-family: 'Segoe UI', sans-serif;
+            color: #1e293b;
+            outline: none;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+
+        input[type="date"]:focus {
+            border-color: #007bff;
         }
 
         table {
@@ -105,6 +138,7 @@
 <body>
 
     <div class="container">
+        <!-- HEADER -->
         <div class="header">
             <div>
                 <h1>Mi historial de bitácoras</h1>
@@ -113,41 +147,82 @@
             <a href="{{ url_for('main.index') }}" class="btn-back">← Volver al inicio</a>
         </div>
 
+        <!-- TARJETA DE FILTRO DE FECHAS (Igual a admin_dashboard) -->
+        <div class="filters-card">
+            <form action="{{ url_for('main.mis_bitacoras') }}" method="GET" id="filtrosForm">
+                <div style="display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-end;">
+                    <div style="flex: 2; min-width: 250px; display: flex; flex-direction: column;">
+                        <label style="font-size: 11px; font-weight: bold; color: #475569; margin-bottom: 5px;">Filtrar
+                            por rango de fechas de actividad</label>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <input type="date" name="fecha_inicio" id="fecha_inicio" value="{{ fecha_inicio }}"
+                                style="width: 100%;" onchange="validarFechas()">
+                            <span style="color: #64748b; font-weight: bold;">-</span>
+                            <input type="date" name="fecha_fin" id="fecha_fin" value="{{ fecha_fin }}"
+                                style="width: 100%;" onchange="validarFechas()">
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button type="submit" class="btn-back" style="background: #5a5a5a; padding: 10px 20px;">Aplicar
+                            filtro</button>
+                        {% if fecha_inicio or fecha_fin %}
+                        <a href="{{ url_for('main.mis_bitacoras') }}" class="btn-back"
+                            style="background: #6c757d;">Limpiar</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- TABLA DE RESULTADOS REORDENADA -->
         <table>
             <thead>
                 <tr>
-                    <th>Fecha de registro</th>
-                    <th>Proyecto</th>
                     <th>Día de actividad</th>
                     <th>Estatus</th>
                     <th>Actividades realizadas</th>
                     <th>Herramientas</th>
                     <th>Entregable / medio</th>
+                    <th>Fecha de registro</th>
+                    <th>Proyecto</th>
                     <th style="text-align: center;">Acción</th>
                 </tr>
             </thead>
             <tbody>
                 {% for r in reportes %}
                 <tr>
-                    <td>{{ r.timestamp.strftime('%d/%m/%Y') }}</td>
-                    <td>{{ r.proyecto_actual }}</td>
+                    <!-- 1. Día de actividad -->
                     <td style="color: #0056b3; font-weight: bold;">{{ r.periodo_visual }}</td>
+
+                    <!-- 2. Estatus -->
                     <td>
                         <span class="badge {{ 'status-finalizado' if r.status == 'Finalizado' else 'status-proceso' }}">
                             {{ r.status }}
                         </span>
                     </td>
+
+                    <!-- 3. Actividades realizadas -->
                     <td>
                         <div class="scrollable-text">{{ r.actividades }}</div>
                     </td>
-                    <td>{{ r.herramientas_utilizadas or 'N/A' }}</td>
-                    <td>
-                        <strong>{{ r.entregable_generado or 'Sin entregable' }}</strong><br>
-                        <small style="color: #666;">{{ r.medio_entregable or '' }}</small>
 
+                    <!-- 4. Herramientas -->
+                    <td>{{ r.herramientas_utilizadas or 'N/A' }}</td>
+
+                    <!-- 5. Entregable / medio -->
+                    <td>
+                        <strong>{{ r.entregable_generado or '-' }}</strong><br>
+                        <small style="color: #666;">{{ r.medio_entregable or '' }}</small>
                     </td>
+
+                    <!-- 6. Fecha de registro (Movido al final) -->
+                    <td>{{ r.timestamp.strftime('%d/%m/%Y') }}</td>
+
+                    <!-- 7. Proyecto (Movido al final) -->
+                    <td>{{ r.proyecto_actual }}</td>
+
+                    <!-- 8. Acción -->
                     <td style="text-align: center; vertical-align: middle;">
-                        <!-- NUEVO BOTÓN DE EDICIÓN -->
                         <a href="{{ url_for('main.edit_my_report', report_id=r.id) }}" class="btn-back"
                             style="background-color: #17a2b8; padding: 6px 12px; font-size: 12px;">Editar</a>
                     </td>
@@ -156,12 +231,29 @@
             </tbody>
         </table>
 
+        <!-- MENSAJE DE ESTADO VACÍO -->
         {% if not reportes %}
+        {% if fecha_inicio or fecha_fin %}
+        <p style="text-align: center; padding: 40px; color: #888;">No se encontraron bitácoras registradas dentro del
+            rango de fechas seleccionado.</p>
+        {% else %}
         <p style="text-align: center; padding: 40px; color: #888;">Aún no has registrado ninguna bitácora en el sistema.
         </p>
         {% endif %}
+        {% endif %}
     </div>
 
+    <!-- SCRIPT DE VALIDACIÓN -->
+    <script>
+        function validarFechas() {
+            const inicio = document.getElementById('fecha_inicio').value;
+            const fin = document.getElementById('fecha_fin').value;
+            if (inicio && fin && inicio > fin) {
+                alert("⚠️ Error: La fecha inicial no puede ser mayor que la fecha final.");
+                document.getElementById('fecha_inicio').value = '';
+            }
+        }
+    </script>
 </body>
 
 </html>

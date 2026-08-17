@@ -92,13 +92,45 @@ def mis_bitacoras():
     if current_user.rol == 'cliente':
         return redirect(url_for('main.cliente_dashboard'))
 
-    # Traemos solo las bitácoras pertenecientes al usuario actual
-    reportes = Bitacora.query.filter_by(user_id=current_user.id).order_by(Bitacora.timestamp.desc()).all()
+    # Obtener las fechas desde la URL (si existen)
+    fecha_inicio = request.args.get('fecha_inicio', '')
+    fecha_fin = request.args.get('fecha_fin', '')
 
+    # Traemos las bitácoras pertenecientes al usuario actual
+    query = Bitacora.query.filter_by(user_id=current_user.id)
+    reportes_base = query.all() # Obtenemos la lista base
+
+    # Reutilizar el filtrado de fechas real del admin
+    if fecha_inicio or fecha_fin:
+        reportes = filtrar_reportes_por_fecha(reportes_base, 'rango', fecha_inicio, fecha_fin, '')
+    else:
+        reportes = reportes_base
+
+    # --- ORDENAR CRONOLÓGICAMENTE POR DÍA DE ACTIVIDAD (Descendente) ---
+    def obtener_fecha_ordenamiento(reporte):
+        if not reporte.periodo_semanal:
+            return datetime.min.date()
+        try:
+            # Extrae la primera fecha por si hay registros antiguos agrupados (ej: "27/07/2026 | 28/07/2026")
+            fecha_str = [d.strip() for d in reporte.periodo_semanal.split('|') if d.strip()][0]
+            # Convertimos a objeto date real para un ordenamiento matemáticamente correcto
+            return datetime.strptime(fecha_str, '%d/%m/%Y').date()
+        except (ValueError, IndexError):
+            # En caso de error o fecha vacía, lo manda al final de la lista
+            return datetime.min.date()
+
+    # Ordenar la lista final usando nuestra función clave (los más nuevos primero)
+    reportes = sorted(reportes, key=obtener_fecha_ordenamiento, reverse=True)
+
+    # Formatear el periodo visual para la tabla
     for r in reportes:
         r.periodo_visual = obtener_rango_semanal(r.periodo_semanal)
 
-    return render_template('main/mis_bitacoras.html', title='Mis Bitácoras', reportes=reportes)
+    return render_template('main/mis_bitacoras.html', 
+                           title='Mis Bitácoras', 
+                           reportes=reportes,
+                           fecha_inicio=fecha_inicio,
+                           fecha_fin=fecha_fin)
 
 
 # --- FUNCIÓN AUXILIAR PARA FILTRAR FECHAS REALES DE ACTIVIDAD ---

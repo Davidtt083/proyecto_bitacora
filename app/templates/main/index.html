@@ -106,6 +106,7 @@
         }
 
         input,
+        select,
         textarea,
         .flatpickr-input {
             padding: 12px;
@@ -172,6 +173,7 @@
 
         /* Reducir altura de campos para ganar espacio vertical */
         input,
+        select,
         textarea,
         .flatpickr-input {
             padding: 8px 12px;
@@ -336,10 +338,13 @@
                     {{ form.proyecto_actual() }}
                 </div>
 
-                <!-- Actividades (Este se mantiene editable para el usuario) -->
+                <!-- Actividades con evento en línea infalible -->
                 <div class="form-group full-width">
                     {{ form.actividades.label }}
-                    {{ form.actividades() }}
+                    {{ form.actividades(maxlength="2700", oninput="actualizarContadorActividades(this)") }}
+                    <div style="text-align: right; margin-top: 5px; font-size: 11px; color: #64748b; font-weight: 500;">
+                        <span id="char-counter">2700</span> caracteres restantes
+                    </div>
                 </div>
 
                 <!-- Herramientas (Este se mantiene editable para el usuario) -->
@@ -369,7 +374,10 @@
                 <!-- Incidencias (Este se mantiene editable para el usuario) -->
                 <div class="form-group full-width">
                     {{ form.incidencias.label }}
-                    {{ form.incidencias() }}
+                    {{ form.incidencias(maxlength="600", oninput="actualizarContadorIncidencias(this)") }}
+                    <div style="text-align: right; margin-top: 5px; font-size: 11px; color: #64748b; font-weight: 500;">
+                        <span id="incidencias-counter">600</span> caracteres restantes
+                    </div>
                 </div>
             </div>
 
@@ -465,9 +473,68 @@
             {% endfor %}
         });
     </script>
+
+
     {% endif %}
     {% endwith %}
+    <!-- SCRIPT DEDICADO PARA EL CONTADOR (FORZADO A ÁMBITO GLOBAL) -->
+    <script>
+        // Forzar la función al objeto global 'window' para que sea visible desde el HTML
+        window.actualizarContadorActividades = function (textarea) {
+            var counter = document.getElementById('char-counter');
+            var limit = 2700;
 
+            if (counter && textarea) {
+                var remaining = limit - textarea.value.length;
+                counter.textContent = remaining;
+
+                // Colorear el contador cuando queden menos de 150 caracteres
+                if (remaining < 150) {
+                    counter.style.color = '#dc3545'; // Rojo
+                    counter.style.fontWeight = 'bold';
+                } else {
+                    counter.style.color = '#64748b'; // Gris estándar
+                    counter.style.fontWeight = '500';
+                }
+            }
+        };
+
+        // Inicializar el contador al cargar la página por si hay texto precargado
+        document.addEventListener('DOMContentLoaded', function () {
+            var textarea = document.getElementById('actividades') || document.querySelector('textarea[name="actividades"]');
+            if (textarea) {
+                window.actualizarContadorActividades(textarea);
+            }
+        });
+
+        // Función global para el contador de caracteres de incidencias (Forzada a window)
+        window.actualizarContadorIncidencias = function(textarea) {
+            var counter = document.getElementById('incidencias-counter');
+            var limit = 600; // <-- Coloca aquí tu número redondeado
+
+            if (counter && textarea) {
+                var remaining = limit - textarea.value.length;
+                counter.textContent = remaining;
+
+                // Colorear el contador cuando queden menos de 100 caracteres
+                if (remaining < 100) {
+                    counter.style.color = '#dc3545'; // Rojo
+                    counter.style.fontWeight = 'bold';
+                } else {
+                    counter.style.color = '#64748b'; // Gris estándar
+                    counter.style.fontWeight = '500';
+                }
+            }
+        };
+
+        // Inicializar el contador al cargar la página por si hay texto precargado
+        document.addEventListener('DOMContentLoaded', function() {
+            var textarea = document.getElementById('incidencias') || document.querySelector('textarea[name="incidencias"]');
+            if (textarea) {
+                window.actualizarContadorIncidencias(textarea);
+            }
+        });
+    </script>
 </body>
 
 </html>
