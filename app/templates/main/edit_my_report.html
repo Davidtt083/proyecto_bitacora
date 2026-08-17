@@ -158,16 +158,19 @@
             padding: 20px;
         }
 
-        
+
 
         /* BOTONES HOMOLOGADOS AL MISMO TAMAÑO */
         .btn {
-            display: block; 
-            width: 100%; 
-            height: 46px; /* Altura fija idéntica para ambos */
-            line-height: 46px; /* Centrado vertical exacto para el botón de enlace <a> */
-            padding: 0 15px; /* Eliminamos el padding vertical para evitar diferencias entre navegadores */
-            box-sizing: border-box; 
+            display: block;
+            width: 100%;
+            height: 46px;
+            /* Altura fija idéntica para ambos */
+            line-height: 46px;
+            /* Centrado vertical exacto para el botón de enlace <a> */
+            padding: 0 15px;
+            /* Eliminamos el padding vertical para evitar diferencias entre navegadores */
+            box-sizing: border-box;
             border-radius: 8px;
             font-weight: bold;
             text-decoration: none;
@@ -327,7 +330,7 @@
                             {{ form.cargo_jefe_inmediato(class="readonly-field", readonly=True) }}
                         </div>
                         <div class="form-group span-3">
-                            {{ form.proyecto_actual.label }}
+                            {{ form.proyecto_actual.label("Proyecto") }}
                             {{ form.proyecto_actual() }}
                         </div>
 
