@@ -21,8 +21,8 @@ class RegistrationForm(FlaskForm):
     # Campo Empresa como SELECT
     empresa = SelectField('Empresa - cliente', choices=[
         ('', '--- Seleccione una empresa ---'),
-        ('Empresa A', 'Empresa A'),
-        ('Empresa B', 'Empresa B'),
+        ('Hyphametrics', 'Hyphametrics'),
+        ('Qualis', 'Qualis'),
         ('Empresa C', 'Empresa C'),
         ('Empresa D', 'Empresa D'),
         ('Independiente', 'Trabajador independiente')
@@ -31,7 +31,7 @@ class RegistrationForm(FlaskForm):
     jefe_directo = StringField('A quién reporta (jefe directo)', validators=[DataRequired()])
     puesto = StringField('Puesto / cargo', validators=[DataRequired()])
     cargo_jefe = StringField('Cargo de jefe directo', validators=[DataRequired()])
-    proyecto_actual = StringField('Proyecto actual', validators=[DataRequired()])
+    proyecto_actual = StringField('Proyecto', validators=[DataRequired()])
     empresa_origen = SelectField('Empresa - origen', choices=[
         ('', '--- Seleccione una empresa ---'),
         ('Krolls', 'Krolls'),

@@ -334,7 +334,7 @@
 
                 <!-- Proyecto actual (Solo lectura) -->
                 <div class="form-group full-width">
-                    {{ form.proyecto_actual.label }}
+                    {{ form.proyecto_actual.label("Proyecto") }} <!-- Modificamos esta línea -->
                     {{ form.proyecto_actual() }}
                 </div>
 
@@ -508,7 +508,7 @@
         });
 
         // Función global para el contador de caracteres de incidencias (Forzada a window)
-        window.actualizarContadorIncidencias = function(textarea) {
+        window.actualizarContadorIncidencias = function (textarea) {
             var counter = document.getElementById('incidencias-counter');
             var limit = 600; // <-- Coloca aquí tu número redondeado
 
@@ -528,7 +528,7 @@
         };
 
         // Inicializar el contador al cargar la página por si hay texto precargado
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             var textarea = document.getElementById('incidencias') || document.querySelector('textarea[name="incidencias"]');
             if (textarea) {
                 window.actualizarContadorIncidencias(textarea);
