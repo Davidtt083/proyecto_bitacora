@@ -223,23 +223,50 @@ def admin_dashboard():
     
     empresas = [e[0] for e in db.session.query(User.empresa).distinct().all() if e[0]]
 
+    # Formatear datos individuales para cada fila de la bitácora
     for r in reportes:
         if r.periodo_semanal:
             dias_lista = [d.strip() for d in r.periodo_semanal.split('|') if d.strip()]
+            
+            # --- NUEVO: ORDENAR FECHAS INTERNAS Y GENERAR FORMATO ISO PARA ORDENAMIENTO EN JS ---
+            try:
+                fechas_obj = sorted([datetime.strptime(d, '%d/%m/%Y').date() for d in dias_lista])
+                dias_lista = [f.strftime('%d/%m/%Y') for f in fechas_obj]
+                # Guardamos la fecha más antigua en formato YYYY-MM-DD para el data-sort-value
+                r.fecha_iso = fechas_obj[0].strftime('%Y-%m-%d')
+            except ValueError:
+                r.fecha_iso = "0000-00-00"
+            
             r.dias_contados = len(dias_lista)
             r.fechas_especificas = ", ".join(dias_lista)
             
+            # ELIMINAR ETIQUETA "Día" Y DAR FORMATO "INICIO - FIN" COMPACTO
             if len(dias_lista) > 1:
-                r.rango_periodo = f"Semana del {dias_lista[0][:5]} al {dias_lista[-1][:5]}"
+                r.rango_periodo = f"{dias_lista[0]} - {dias_lista[-1]}"
             elif len(dias_lista) == 1:
-                r.rango_periodo = f"Día {dias_lista[0]}"
+                r.rango_periodo = dias_lista[0]
             else:
                 r.rango_periodo = "-"
         else:
             r.dias_contados = 0
             r.fechas_especificas = "-"
             r.rango_periodo = "-"
+            r.fecha_iso = "0000-00-00"
 
+    # ORDENAR CRONOLÓGICAMENTE DE MENOR A MAYOR (ASCENDENTE)
+    def obtener_fecha_sort(rep):
+        if not rep.periodo_semanal:
+            return datetime.min.date()
+        try:
+            f_str = [d.strip() for d in rep.periodo_semanal.split('|') if d.strip()][0]
+            return datetime.strptime(f_str, '%d/%m/%Y').date()
+        except (ValueError, IndexError):
+            return datetime.min.date()
+
+    # reverse=False ordena de forma ascendente (menor a mayor)
+    reportes = sorted(reportes, key=obtener_fecha_sort, reverse=False)
+
+    # RETORNAR LA RESPUESTA CORRECTA (¡Esto es lo que se había omitido!)
     return render_template('main/admin_dashboard.html', 
                            title='Panel Admin', 
                            reportes=reportes,

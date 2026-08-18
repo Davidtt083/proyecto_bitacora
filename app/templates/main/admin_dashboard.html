@@ -392,11 +392,13 @@
                 <tbody>
                     {% for reporte in reportes %}
                     <tr>
-                        <!-- ATRIBUTO data-sort-value para ordenamiento exacto e inteligente -->
-                        <td data-sort-value="{{ reporte.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}">
+                        <!-- 1. Periodo del reporte (Usa el valor de fecha_iso ordenable en JS) -->
+                        <td data-sort-value="{{ reporte.fecha_iso }}">
                             <span style="font-weight: bold; color: #0056b3;">{{ reporte.rango_periodo }}</span>
                         </td>
-                        <td data-sort-value="{{ reporte.fechas_especificas }}" style="font-size: 12px; color: #555;">
+
+                        <!-- 2. Fechas específicas (Usa el valor de fecha_iso ordenable en JS) -->
+                        <td data-sort-value="{{ reporte.fecha_iso }}" style="font-size: 12px; color: #555;">
                             {{ reporte.fechas_especificas }}
                         </td>
                         <td data-sort-value="{{ reporte.nombre_completo.lower() }}"><strong>{{ reporte.nombre_completo

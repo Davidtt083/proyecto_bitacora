@@ -59,6 +59,8 @@
             font-size: 7.5px;
             line-height: 1.2;
             text-align: justify;
+            -pdf-word-wrap: CJK;
+            /* Propiedad exclusiva de xhtml2pdf para cortar palabras sin espacios */
         }
     </style>
 </head>
@@ -98,7 +100,7 @@
                 <!-- 4. Empresa cliente -->
                 <td>{{ r.empresa }}</td>
                 <!-- 5. Días laborados -->
-                <td class="text-center">{{ r.dias_contados }} días</td>
+                <td class="text-center">{{ r.dias_contados }}</td>
                 <!-- 6. Jefe y su cargo -->
                 <td>{{ r.nombre_jefe_inmediato }}<br><span style="color: #555;">{{ r.cargo_jefe_inmediato }}</span></td>
                 <!-- 7. Proyecto -->
