@@ -94,7 +94,15 @@
                     <span style="font-weight: bold; color: #0056b3;">{{ r.rango_periodo }}</span>
                 </td>
                 <!-- 2. Fechas específicas -->
-                <td class="texto-largo">{{ r.fechas_especificas }}</td>
+                <td class="texto-largo" style="line-height: 1.2;">
+                    {% if r.fechas_especificas %}
+                    {% for f in r.fechas_especificas.split(',') %}
+                    <div style="line-height: 1.1; margin-bottom: 1px;">{{ f.strip() }}</div>
+                    {% endfor %}
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
                 <!-- 3. Nombre del consultor -->
                 <td><strong>{{ r.nombre_completo }}</strong></td>
                 <!-- 4. Empresa cliente -->
