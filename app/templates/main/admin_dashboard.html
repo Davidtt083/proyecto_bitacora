@@ -518,8 +518,11 @@
     <!-- SCRIPTS -->
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://npmcdn.com/flatpickr/dist/l10n/es.js"></script>
+    <!-- SCRIPTS ACTUALIZADOS PARA SINCRONIZACIÓN DE ORDEN EN PDF -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/es.js"></script>
     <script>
-        // 1. Inicializar el calendario de Días Específicos (Flatpickr)
+        // Inicializar el calendario de Días Específicos (Flatpickr)
         flatpickr("#fechas_especificas", {
             mode: "multiple",
             dateFormat: "d/m/Y",
@@ -527,7 +530,11 @@
             conjunction: ", "
         });
 
-        // 2. Lógica para mostrar/ocultar Rango o Días Específicos
+        // Variables globales para rastrear el orden activo seleccionado por el Admin
+        let activeSortCol = null;
+        let activeSortDir = null;
+
+        // Lógica para mostrar/ocultar Rango o Días Específicos
         function toggleFiltrosFechas() {
             const selector = document.getElementById("tipo_filtro").value;
             const divRango = document.getElementById("contenedor_rango");
@@ -549,7 +556,7 @@
 
         document.addEventListener('DOMContentLoaded', toggleFiltrosFechas);
 
-        // 3. Validación de fechas inicio-fin
+        // Validación de fechas inicio-fin
         function validarFechas() {
             const inicio = document.getElementById('fecha_inicio').value;
             const fin = document.getElementById('fecha_fin').value;
@@ -559,9 +566,7 @@
             }
         }
 
-        // 4. --- SISTEMA DE CONSTRUCCIÓN Y DESCARGA DIRECTA DE PDFS (Actualizado) ---
-
-        // Función auxiliar para construir la URL del PDF con los filtros activos
+        // --- SISTEMA DE CONSTRUCCIÓN Y DESCARGA DIRECTA DE PDFS (Sincronizado) ---
         function construirUrlPDF(rutaBase) {
             let url = rutaBase + "?q={{ search_query }}&empresa={{ empresa_filter }}&status={{ status_filter }}";
             url = url.replace(/&amp;/g, '&');
@@ -578,10 +583,15 @@
                 const f_esp = document.getElementById('fechas_especificas').value;
                 if (f_esp) url += "&fechas_especificas=" + encodeURIComponent(f_esp);
             }
+
+            // PASAR EL ORDEN EN PANTALLA AL BACKEND
+            if (activeSortCol !== null && activeSortDir !== null) {
+                url += "&sort_col=" + activeSortCol + "&sort_dir=" + activeSortDir;
+            }
+
             return url;
         }
 
-        // Botón 1: Generar informe PDF (Firma del Administrador actual directo)
         function descargarInformePdfDirecto() {
             const empresaSelect = document.querySelector('select[name="empresa"]');
             if (!empresaSelect.value) {
@@ -592,19 +602,17 @@
             window.location.href = url;
         }
 
-        // Botón 2: Descargar vista actual (PDF de la Tabla Horizontal)
         function descargarTablaPdf() {
             const url = construirUrlPDF("{{ url_for('main.export_table_pdf') }}");
             window.location.href = url;
         }
 
-        // 5. --- SISTEMA DE ORDENAMIENTO DE DOBLE FLECHA APILADA ---
+        // --- SISTEMA DE ORDENAMIENTO INTERACTIVO (Rastrea el orden para el PDF) ---
         document.addEventListener("DOMContentLoaded", function () {
             const table = document.querySelector("table");
             const headers = table.querySelectorAll("thead th");
             const tbody = table.querySelector("tbody");
 
-            // Código SVG del ícono de doble flecha vertical
             const svgHTML = `
                 <svg class="sort-icon-svg" viewBox="0 0 24 24">
                     <path class="arrow-up" d="M12 4l-6 7h12z" />
@@ -613,34 +621,33 @@
             `;
 
             headers.forEach((header, index) => {
-                // No habilitamos ordenamiento para la columna de "Acciones" (última)
                 if (index === headers.length - 1) return;
 
                 header.classList.add("sortable");
-
-                // Insertamos el SVG de doble flecha al final de la celda de forma nativa
                 header.insertAdjacentHTML('beforeend', svgHTML);
 
                 header.addEventListener("click", () => {
                     const isAsc = header.classList.contains("asc");
 
-                    // Reseteamos el estado visual de todos los otros encabezados
                     headers.forEach(h => {
                         h.classList.remove("asc", "desc");
                     });
 
-                    // Alternamos entre clases asc y desc
+                    // Actualizar variables de ordenamiento global según la acción
                     if (isAsc) {
                         header.classList.add("desc");
+                        activeSortCol = index;
+                        activeSortDir = "desc";
                         ordenarFilas(index, false);
                     } else {
                         header.classList.add("asc");
+                        activeSortCol = index;
+                        activeSortDir = "asc";
                         ordenarFilas(index, true);
                     }
                 });
             });
 
-            // Función física para ordenar filas en el DOM
             function ordenarFilas(colIndex, esAscendente) {
                 const filas = Array.from(tbody.querySelectorAll("tr"));
 
@@ -651,7 +658,6 @@
                     const valA = celdaA.getAttribute("data-sort-value") || celdaA.innerText.trim();
                     const valB = celdaB.getAttribute("data-sort-value") || celdaB.innerText.trim();
 
-                    // Validación numérica ESTRICTA (Evita que parseFloat confunda fechas "YYYY-MM-DD" con un número)
                     const esNumA = !isNaN(valA) && !isNaN(parseFloat(valA));
                     const esNumB = !isNaN(valB) && !isNaN(parseFloat(valB));
 
@@ -661,13 +667,11 @@
                         return esAscendente ? numA - numB : numB - numA;
                     }
 
-                    // Al no ser número puro, ordena como string (las fechas ISO se ordenan perfecto aquí)
                     return esAscendente
                         ? valA.localeCompare(valB, 'es', { sensitivity: 'base' })
                         : valB.localeCompare(valA, 'es', { sensitivity: 'base' });
                 });
 
-                // Re-insertamos las filas ordenadas al final de la tabla
                 filas.forEach(fila => tbody.appendChild(fila));
             }
         });

@@ -609,6 +609,10 @@ def export_table_pdf():
     fecha_fin = request.args.get('fecha_fin', '')
     fechas_especificas = request.args.get('fechas_especificas', '')
 
+    # Leer parámetros de ordenamiento enviados desde el Dashboard
+    sort_col = request.args.get('sort_col', type=int)
+    sort_dir = request.args.get('sort_dir', 'asc')
+
     query = Bitacora.query
 
     if search_query:
@@ -631,22 +635,89 @@ def export_table_pdf():
     reportes_base = query.order_by(Bitacora.timestamp.desc()).all()
     reportes = filtrar_reportes_por_fecha(reportes_base, tipo_filtro, fecha_inicio, fecha_fin, fechas_especificas)
 
+    # Formatear datos individuales para cada fila de la bitácora
     for r in reportes:
         if r.periodo_semanal:
             dias_lista = [d.strip() for d in r.periodo_semanal.split('|') if d.strip()]
+            
+            # Ordenar fechas internas del reporte cronológicamente
+            try:
+                fechas_obj = sorted([datetime.strptime(d, '%d/%m/%Y').date() for d in dias_lista])
+                dias_lista = [f.strftime('%d/%m/%Y') for f in fechas_obj]
+            except ValueError:
+                pass
+            
             r.dias_contados = len(dias_lista)
             r.fechas_especificas = ", ".join(dias_lista)
             
+            # ELIMINAR COMPLETAMENTE "Día" / "Semana del" Y USAR FORMATO LIMPIO
             if len(dias_lista) > 1:
-                r.rango_periodo = f"Semana del {dias_lista[0][:5]} al {dias_lista[-1][:5]}"
+                r.rango_periodo = f"{dias_lista[0]} - {dias_lista[-1]}"
             elif len(dias_lista) == 1:
-                r.rango_periodo = f"Día {dias_lista[0]}"
+                r.rango_periodo = dias_lista[0] # Limpio
             else:
                 r.rango_periodo = "-"
         else:
             r.dias_contados = 0
             r.fechas_especificas = "-"
             r.rango_periodo = "-"
+
+    # --- NUEVO: SISTEMA DE RE-ORDENAMIENTO EXTACTO DEL PDF (COINCIDE CON LA PANTALLA) ---
+    if sort_col is not None:
+        is_reverse = (sort_dir == 'desc')
+        
+        # Mapeo de lógica de ordenamiento según la columna del HTML
+        def obtener_llave_ordenamiento(rep):
+            if sort_col in [0, 1]: # Periodo o Fechas específicas
+                if not rep.periodo_semanal:
+                    return datetime.min.date()
+                try:
+                    f_str = [d.strip() for d in rep.periodo_semanal.split('|') if d.strip()][0]
+                    return datetime.strptime(f_str, '%d/%m/%Y').date()
+                except (ValueError, IndexError):
+                    return datetime.min.date()
+            elif sort_col == 2:
+                return rep.nombre_completo.lower()
+            elif sort_col == 3:
+                return 1 if rep.autor.activo else 0
+            elif sort_col == 4:
+                return rep.empresa.lower()
+            elif sort_col == 5:
+                return rep.puesto.lower()
+            elif sort_col == 6:
+                return rep.dias_contados
+            elif sort_col == 7:
+                return rep.nombre_jefe_inmediato.lower()
+            elif sort_col == 8:
+                return rep.cargo_jefe_inmediato.lower()
+            elif sort_col == 9:
+                return rep.proyecto_actual.lower()
+            elif sort_col == 10:
+                return rep.status
+            elif sort_col == 11:
+                return rep.actividades
+            elif sort_col == 12:
+                return rep.herramientas_utilizadas or ''
+            elif sort_col == 13:
+                return rep.entregable_generado or ''
+            elif sort_col == 14:
+                return rep.medio_entregable or ''
+            elif sort_col == 15:
+                return rep.incidencias or ''
+            return rep.timestamp
+
+        reportes = sorted(reportes, key=obtener_llave_ordenamiento, reverse=is_reverse)
+    else:
+        # Ordenamiento ascendente cronológico por defecto
+        def obtener_fecha_sort(rep):
+            if not rep.periodo_semanal:
+                return datetime.min.date()
+            try:
+                f_str = [d.strip() for d in rep.periodo_semanal.split('|') if d.strip()][0]
+                return datetime.strptime(f_str, '%d/%m/%Y').date()
+            except (ValueError, IndexError):
+                return datetime.min.date()
+        reportes = sorted(reportes, key=obtener_fecha_sort, reverse=False)
 
     html = render_template('main/pdf_table.html', reportes=reportes)
     result = BytesIO()
