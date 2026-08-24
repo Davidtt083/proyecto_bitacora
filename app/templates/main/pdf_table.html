@@ -1,170 +1,257 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
-    <title>Reporte Tabla de Bitácoras</title>
+    <title>Reporte de Bitácoras</title>
     <style>
         @page {
-            size: A4 landscape;
-            /* Formato horizontal */
-            margin: 1cm;
+            size: A4 landscape; /* Formato horizontal */
+            margin: 1.5cm 1cm 1.5cm 1cm;
+            
+            /* Marco estático para la paginación en el pie de página */
+            @frame footer_frame {
+                -pdf-frame-content: footer_content;
+                bottom: 0.5cm;
+                margin-left: 1cm;
+                margin-right: 1cm;
+                height: 0.8cm;
+            }
         }
-
+        
         body {
             font-family: Helvetica, Arial, sans-serif;
-            font-size: 8px;
+            font-size: 8px; 
             color: #333;
         }
 
-        h2 {
-            text-align: center;
-            margin-top: 0;
-            margin-bottom: 10px;
-            color: #5a5a5a;
+        /* Encabezado: Fecha y hora con mayor visibilidad */
+        .alineacion-derecha { 
+            text-align: right; 
+            font-size: 9px; 
+            color: #555; 
+            margin-bottom: 10px; 
         }
 
+        /* Contenedor del título y cintillo de criterios */
+        .header-documento {
+            border-bottom: 1.5px solid #2c3e50;
+            padding-bottom: 8px;
+            margin-bottom: 10px;
+        }
+
+        /* Título ejecutivo más grande y destacado */
+        .titulo-ejecutivo {
+            text-align: center;
+            color: #1e293b;
+            margin: 0 0 6px 0;
+            font-size: 14px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        /* Desglose de criterios de búsqueda (Rango vs Días específicos) */
+        .subtitulo-criterios {
+            text-align: center;
+            font-size: 9px;
+            color: #334155;
+            line-height: 1.3;
+        }
+
+        .etiqueta-criterio {
+            font-weight: bold;
+            color: #0f172a;
+        }
+
+        .valor-criterio {
+            color: #0056b3;
+            font-weight: bold;
+        }
+
+        .separador {
+            color: #94a3b8;
+            padding: 0 6px;
+        }
+
+        /* Párrafo formal general con tipografía más legible */
+        .parrafo-ejecutivo {
+            text-align: justify;
+            font-size: 8.5px;
+            color: #333;
+            line-height: 1.4;
+            margin: 0 0 12px 0;
+        }
+        
         table {
             width: 100%;
             border-collapse: collapse;
         }
-
-        /* Dejamos que el sistema decida libremente cómo cortar las filas */
+        
         tr {
-            page-break-inside: auto;
+            page-break-inside: auto; 
         }
-
-        th,
-        td {
+        
+        th, td {
             border: 1px solid #666;
-            padding: 4px;
+            padding: 3.5px 4px; 
             text-align: left;
             vertical-align: top;
             word-wrap: break-word;
         }
-
+        
         th {
             background-color: #5a5a5a;
             color: white;
             font-weight: bold;
             text-align: center;
-        }
-
-        .text-center {
-            text-align: center;
-        }
-
-        /* Hacemos la letra un poco más pequeña solo para textos muy largos */
-        .texto-largo {
             font-size: 7.5px;
-            line-height: 1.2;
-            text-align: justify;
+        }
+        
+        .text-center { text-align: center; }
+        
+        .texto-largo {
+            font-size: 7px;
+            line-height: 1.15;
             -pdf-word-wrap: CJK;
-            /* Propiedad exclusiva de xhtml2pdf para cortar palabras sin espacios */
+        }
+
+        /* Estilo de la paginación en el pie de página */
+        #footer_content {
+            text-align: right;
+            font-size: 7.5px;
+            color: #777;
         }
     </style>
 </head>
-
 <body>
 
-    <h2>Reporte de Bitácoras (Vista de Tabla)</h2>
+    <!-- PIE DE PÁGINA CON PAGINACIÓN AUTOMÁTICA -->
+    <div id="footer_content">
+        Página <pdf:pagenumber> de <pdf:pagecount>
+    </div>
 
+    <!-- ENCABEZADO: FECHA Y HORA DE EMISIÓN -->
+    <div class="alineacion-derecha">
+        Ciudad de México, a {{ fecha_hoy }}
+    </div>
+
+    <!-- TÍTULO Y CINTILLO DE CRITERIOS EJECUTIVOS -->
+    <div class="header-documento">
+        <div class="titulo-ejecutivo">Reporte Operativo de Bitácoras</div>
+        <div class="subtitulo-criterios">
+            <span class="etiqueta-criterio">{{ criterio_busqueda }}:</span> 
+            <span class="valor-criterio">{{ detalle_periodo }}</span>
+            <span class="separador">|</span>
+            <span class="etiqueta-criterio">Empresa:</span> 
+            <span class="valor-criterio">{{ empresa_filtro_texto }}</span>
+            <span class="separador">|</span>
+            <span class="etiqueta-criterio">Total de registros:</span> 
+            <span class="valor-criterio">{{ total_registros }}</span>
+        </div>
+    </div>
+
+    <!-- PÁRRAFO INTRODUCTORIO FORMAL -->
+    <p class="parrafo-ejecutivo">
+        A continuación, se presenta el concentrado operativo y registro detallado de las actividades realizadas por los consultores especializados, especificando las fechas de ejecución, proyectos asignados, entregables generados e incidencias reportadas en sus respectivas bitácoras de trabajo.
+    </p>
+
+    <!-- TABLA DE RESULTADOS -->
     <table>
         <thead repeat="1">
             <tr>
-                <th style="width: 8%;">Periodo del reporte</th>
+                <th style="width: 8%;">Periodo</th>
                 <th style="width: 8%;">Fechas específicas</th>
                 <th style="width: 8%;">Nombre</th>
                 <th style="width: 7%;">Empresa</th>
-                <th style="width: 4%;">Días laborados</th>
+                <th style="width: 4%;">Días</th>
                 <th style="width: 9%;">Jefe / Cargo</th>
                 <th style="width: 9%;">Proyecto</th>
-                <th style="width: 5%;">Status</th>
-                <th style="width: 19%;">Actividades</th>
+                <th style="width: 5%;">Estatus</th>
+                <th style="width: 19%;">Actividades realizadas</th>
                 <th style="width: 9%;">Herramientas</th>
                 <th style="width: 8%;">Entregable / Medio</th>
-                <th style="width: 8%;">Incidencias</th>
+                <th style="width: 6%;">Incidencias</th>
             </tr>
         </thead>
         <tbody>
             {% for r in reportes %}
             <tr>
                 <!-- 1. Periodo -->
-                <td class="text-center" style="font-weight: bold; color: #333;">
-                    <span style="font-weight: bold; color: #0056b3;">{{ r.rango_periodo }}</span>
+                <td class="text-center" style="font-weight: bold; color: #0056b3; font-size: 7px;">
+                    {{ r.rango_periodo }}
                 </td>
-                <!-- 2. Fechas específicas -->
-                <td class="texto-largo" style="line-height: 1.2;">
+                
+                <!-- 2. Fechas específicas (Bloques div independientes) -->
+                <td class="texto-largo">
                     {% if r.fechas_especificas %}
-                    {% for f in r.fechas_especificas.split(',') %}
-                    <div style="line-height: 1.1; margin-bottom: 1px;">{{ f.strip() }}</div>
-                    {% endfor %}
+                        {% for f in r.fechas_especificas.split(',') %}
+                            <div style="line-height: 1.1; margin-bottom: 1px;">{{ f.strip() }}</div>
+                        {% endfor %}
                     {% else %}
-                    -
+                        -
                     {% endif %}
                 </td>
+
                 <!-- 3. Nombre del consultor -->
                 <td><strong>{{ r.nombre_completo }}</strong></td>
+                
                 <!-- 4. Empresa cliente -->
                 <td>{{ r.empresa }}</td>
-                <!-- 5. Días laborados -->
+                
+                <!-- 5. Días laborados (Numérico limpio) -->
                 <td class="text-center">{{ r.dias_contados }}</td>
+                
                 <!-- 6. Jefe y su cargo -->
-                <td>{{ r.nombre_jefe_inmediato }}<br><span style="color: #555;">{{ r.cargo_jefe_inmediato }}</span></td>
+                <td>{{ r.nombre_jefe_inmediato }}<br><span style="color: #555; font-size: 6.5px;">{{ r.cargo_jefe_inmediato }}</span></td>
+                
                 <!-- 7. Proyecto -->
                 <td>{{ r.proyecto_actual }}</td>
+                
                 <!-- 8. Estatus de la actividad -->
                 <td class="text-center">{{ r.status }}</td>
-
-                <!-- 9. Actividades -->
+                
+                <!-- 9. Actividades completas sin recortes -->
                 <td class="texto-largo" style="word-wrap: break-word;">
                     {{ r.actividades }}
                 </td>
-
+                
                 <!-- 10. Herramientas -->
                 <td class="texto-largo">{{ r.herramientas_utilizadas or '-' }}</td>
-
-                <!-- 11. Entregable / Medio (Formato inteligente) -->
+                
+                <!-- 11. Entregable / Medio (Formato Inteligente) -->
                 <td class="texto-largo" style="word-wrap: break-word;">
-                    <!-- Entregable -->
                     {% set ent = r.entregable_generado or '' %}
                     {% if ent and (ent.startswith('http://') or ent.startswith('https://') or ent.startswith('www.')) %}
-                    <a href="{{ ent if ent.startswith('http') else 'http://' ~ ent }}" target="_blank"
-                        style="color: #0056b3; font-weight: bold; text-decoration: none;">
-                        🔗 Entregable
-                    </a>
+                        <a href="{{ ent if ent.startswith('http') else 'http://' ~ ent }}" target="_blank" style="color: #0056b3; font-weight: bold; text-decoration: none;">
+                            🔗 Entregable
+                        </a>
                     {% else %}
-                    {{ ent or '-' }}
+                        {{ ent or '-' }}
                     {% endif %}
                     <br>
-                    <!-- Medio -->
                     {% set med = r.medio_entregable or '' %}
                     {% if med and (med.startswith('http://') or med.startswith('https://') or med.startswith('www.')) %}
-                    <a href="{{ med if med.startswith('http') else 'http://' ~ med }}" target="_blank"
-                        style="color: #0056b3; font-weight: bold; text-decoration: none;">
-                        🔗 Medio / Link
-                    </a>
+                        <a href="{{ med if med.startswith('http') else 'http://' ~ med }}" target="_blank" style="color: #0056b3; font-weight: bold; text-decoration: none;">
+                            🔗 Medio / Link
+                        </a>
                     {% else %}
-                    <span style="color: #555;">
-                        {{ med or '' }}
-                    </span>
+                        <span style="color: #555;">
+                            {{ med or '' }}
+                        </span>
                     {% endif %}
                 </td>
-
-                <!-- 12. Incidencias (Esta es la columna que se había extraviado) -->
-                <td class="texto-largo">{{ r.incidencias or 'Ninguna' }}</td>
+                
+                <!-- 12. Incidencias -->
+                <td class="texto-largo" style="color: #dc3545;">{{ r.incidencias or 'Ninguna' }}</td>
             </tr>
             {% endfor %}
-
+            
             {% if not reportes %}
             <tr>
-                <td colspan="12" class="text-center" style="padding: 20px; font-size: 12px;">No se encontraron registros
-                    con los filtros actuales.</td>
+                <td colspan="12" class="text-center" style="padding: 20px; font-size: 10px;">No se encontraron registros con los filtros actuales.</td>
             </tr>
             {% endif %}
         </tbody>
     </table>
 
 </body>
-
 </html>

@@ -477,9 +477,15 @@ def user_reports_pdf(user_id):
             r.fechas_especificas = "-"
             r.rango_periodo = "-"
 
+    # Construir fecha y hora exacta de emisión en el encabezado
+    meses_es = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+    hoy = datetime.now()
+    fecha_hoy = f"{hoy.day} de {meses_es[hoy.month-1]} de {hoy.year} a las {hoy.strftime('%H:%M')} hrs"
+
     html = render_template('main/pdf_user_reports.html', 
                            usuario=usuario, 
-                           reportes=reportes)
+                           reportes=reportes,
+                           fecha_hoy=fecha_hoy)
     
     result = BytesIO()
     pdf = pisa.CreatePDF(BytesIO(html.encode('utf-8')), dest=result, encoding='utf-8')
@@ -619,7 +625,7 @@ def export_pdf():
 
     meses_es = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
     hoy = datetime.now()
-    fecha_hoy = f"{hoy.day} de {meses_es[hoy.month-1]} de {hoy.year}"
+    fecha_hoy = f"{hoy.day} de {meses_es[hoy.month-1]} de {hoy.year} a las {hoy.strftime('%H:%M')} hrs"
 
     hoy_str = hoy.strftime('%d-%m-%Y')
     if tipo_filtro == 'rango':
@@ -653,12 +659,14 @@ def export_pdf():
 
 
 # --- EXPORTAR TABLA DE BITÁCORAS PDF (HORIZONTAL) ---
+# --- EXPORTAR TABLA DE BITÁCORAS PDF (HORIZONTAL) ---
 @bp.route('/admin/exportar_tabla_pdf')
 @login_required
 def export_table_pdf():
     if current_user.rol != 'admin':
         abort(403)
     
+    # 1. Obtener parámetros de búsqueda y filtros
     search_query = request.args.get('q', '')
     empresa_filter = request.args.get('empresa', '')
     status_filter = request.args.get('status', '')
@@ -667,6 +675,7 @@ def export_table_pdf():
     fecha_fin = request.args.get('fecha_fin', '')
     fechas_especificas = request.args.get('fechas_especificas', '')
 
+    # Leer parámetros de ordenamiento enviados desde la vista interactiva del Dashboard
     sort_col = request.args.get('sort_col', type=int)
     sort_dir = request.args.get('sort_dir', 'asc')
 
@@ -688,12 +697,16 @@ def export_table_pdf():
     if status_filter:
         query = query.filter(Bitacora.status == status_filter)
 
+    # 2. Filtrar fechas reales
     reportes_base = query.order_by(Bitacora.timestamp.desc()).all()
     reportes = filtrar_reportes_por_fecha(reportes_base, tipo_filtro, fecha_inicio, fecha_fin, fechas_especificas)
 
+    # 3. Formatear datos individuales para cada fila de la bitácora
     for r in reportes:
         if r.periodo_semanal:
             dias_lista = [d.strip() for d in r.periodo_semanal.split('|') if d.strip()]
+            
+            # Ordenar fechas internas del reporte cronológicamente
             try:
                 fechas_obj = sorted([datetime.strptime(d, '%d/%m/%Y').date() for d in dias_lista])
                 dias_lista = [f.strftime('%d/%m/%Y') for f in fechas_obj]
@@ -703,6 +716,7 @@ def export_table_pdf():
             r.dias_contados = len(dias_lista)
             r.fechas_especificas = ", ".join(dias_lista)
             
+            # Formato de periodo limpio (sin 'Día' ni 'Semana del')
             if len(dias_lista) > 1:
                 r.rango_periodo = f"{dias_lista[0]} - {dias_lista[-1]}"
             elif len(dias_lista) == 1:
@@ -714,11 +728,12 @@ def export_table_pdf():
             r.fechas_especificas = "-"
             r.rango_periodo = "-"
 
+    # 4. Sistema de ordenamiento idéntico al que está en pantalla
     if sort_col is not None:
         is_reverse = (sort_dir == 'desc')
         
         def obtener_llave_ordenamiento(rep):
-            if sort_col in [0, 1]:
+            if sort_col in [0, 1]:  # Periodo o Fechas específicas
                 if not rep.periodo_semanal:
                     return datetime.min.date()
                 try:
@@ -758,6 +773,7 @@ def export_table_pdf():
 
         reportes = sorted(reportes, key=obtener_llave_ordenamiento, reverse=is_reverse)
     else:
+        # Ordenamiento ascendente cronológico por defecto
         def obtener_fecha_sort(rep):
             if not rep.periodo_semanal:
                 return datetime.min.date()
@@ -768,7 +784,47 @@ def export_table_pdf():
                 return datetime.min.date()
         reportes = sorted(reportes, key=obtener_fecha_sort, reverse=False)
 
-    html = render_template('main/pdf_table.html', reportes=reportes)
+    # 5. Construir fecha, hora exacta y desglose de criterios para el encabezado ejecutivo
+    meses_es = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+    hoy = datetime.now()
+    fecha_hoy = f"{hoy.day} de {meses_es[hoy.month-1]} de {hoy.year} a las {hoy.strftime('%H:%M')} hrs"
+
+    # Determinar si fue por rango, por días específicos o general
+    if tipo_filtro == 'rango' and (fecha_inicio or fecha_fin):
+        criterio_busqueda = "Por Rango de Fechas"
+        if fecha_inicio and fecha_fin:
+            f_ini = datetime.strptime(fecha_inicio, '%Y-%m-%d').strftime('%d/%m/%Y')
+            f_fin = datetime.strptime(fecha_fin, '%Y-%m-%d').strftime('%d/%m/%Y')
+            detalle_periodo = f"Del {f_ini} al {f_fin}"
+        elif fecha_inicio:
+            f_ini = datetime.strptime(fecha_inicio, '%Y-%m-%d').strftime('%d/%m/%Y')
+            detalle_periodo = f"A partir del {f_ini}"
+        elif fecha_fin:
+            f_fin = datetime.strptime(fecha_fin, '%Y-%m-%d').strftime('%d/%m/%Y')
+            detalle_periodo = f"Hasta el {f_fin}"
+    elif tipo_filtro == 'especificas' and fechas_especificas:
+        criterio_busqueda = "Por Días Específicos"
+        try:
+            fechas_list = [d.strip() for d in fechas_especificas.split(',') if d.strip()]
+            fechas_ordenadas = sorted(fechas_list, key=lambda x: datetime.strptime(x, '%d/%m/%Y'))
+            detalle_periodo = ", ".join(fechas_ordenadas)
+        except ValueError:
+            detalle_periodo = fechas_especificas
+    else:
+        criterio_busqueda = "Periodo General"
+        detalle_periodo = "Historial completo de actividades"
+
+    empresa_filtro_texto = empresa_filter if empresa_filter else "Todas las empresas"
+
+    # 6. Renderizar plantilla PDF pasando los nuevos datos del encabezado
+    html = render_template('main/pdf_table.html', 
+                           reportes=reportes,
+                           fecha_hoy=fecha_hoy,
+                           criterio_busqueda=criterio_busqueda,
+                           detalle_periodo=detalle_periodo,
+                           empresa_filtro_texto=empresa_filtro_texto,
+                           total_registros=len(reportes))
+
     result = BytesIO()
     pdf = pisa.CreatePDF(BytesIO(html.encode('utf-8')), dest=result, encoding='utf-8')
 

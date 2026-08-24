@@ -1,16 +1,24 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
     <title>Informe Mensual</title>
     <style>
-        /* Configuración de página Vertical (Portrait) */
+        /* Configuración de página Vertical (Portrait) con marco de pie de página estático */
         @page {
             size: A4 portrait;
-            margin: 2.5cm 2cm;
+            margin: 2.5cm 2cm 2.5cm 2cm;
+            
+            /* Marco estático para el número de página */
+            @frame footer_frame {
+                -pdf-frame-content: footer_content;
+                bottom: 1cm;
+                margin-left: 2cm;
+                margin-right: 2cm;
+                height: 1cm;
+            }
         }
-
+        
         body {
             font-family: Helvetica, Arial, sans-serif;
             font-size: 12px;
@@ -18,40 +26,36 @@
             line-height: 1.6;
         }
 
-        .alineacion-derecha {
-            text-align: right;
-            margin-bottom: 30px;
+        .alineacion-derecha { 
+            text-align: right; 
+            margin-bottom: 25px; 
+            font-size: 11px;
+            color: #555;
         }
-
-        .negrita {
-            font-weight: bold;
-        }
-
+        
+        .negrita { font-weight: bold; }
+        
         h3 {
             text-align: center;
             color: #2c3e50;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
             font-size: 14px;
             text-transform: uppercase;
         }
 
-        p {
-            text-align: justify;
-            margin-bottom: 25px;
-        }
+        p { text-align: justify; margin-bottom: 20px; }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
         }
 
-        th,
-        td {
+        th, td {
             border: 1px solid #000;
-            padding: 8px 6px;
+            padding: 6px 5px;
             vertical-align: middle;
-            font-size: 10px;
+            font-size: 9.5px;
         }
 
         th {
@@ -61,34 +65,39 @@
             color: #333;
         }
 
-        .td-centro {
-            text-align: center;
-        }
+        .td-centro { text-align: center; }
+        .seccion-firma { margin-top: 50px; text-align: center; }
 
-        .seccion-firma {
-            margin-top: 60px;
-            text-align: center;
+        /* Estilo del pie de página */
+        #footer_content {
+            text-align: right;
+            font-size: 9px;
+            color: #777;
         }
     </style>
 </head>
-
 <body>
 
+    <!-- PIE DE PÁGINA CON NUMERACIÓN AUTOMÁTICA -->
+    <div id="footer_content">
+        Página <pdf:pagenumber> de <pdf:pagecount>
+    </div>
+
+    <!-- ENCABEZADO CON FECHA Y HORA -->
     <div class="alineacion-derecha">
         Ciudad de México, a {{ fecha_hoy }}
     </div>
 
-    <!-- Título optimizado -->
+    <!-- TÍTULO DEL INFORME -->
     <h3>{{ headline_title }}</h3>
 
     <p>
-        A continuación, se muestra el listado del consultor especializado de <span class="negrita">{{ empresa_origen
-            }}</span>
-        que colaboró en <span class="negrita">{{ empresa_cliente }}</span> para diversas actividades, mismas que están
+        A continuación, se muestra el listado del consultor especializado de <span class="negrita">{{ empresa_origen }}</span> 
+        que colaboró en <span class="negrita">{{ empresa_cliente }}</span> para diversas actividades, mismas que están 
         especificadas en la bitácora semanal de cada consultor, según el tiempo asignado.
     </p>
 
-    <!-- Tabla con la nueva columna integrada -->
+    <!-- TABLA DE CONSULTORES -->
     <table>
         <thead>
             <tr>
@@ -108,13 +117,13 @@
                 <td>{{ c.nombre }}</td>
                 <td>{{ c.puesto }}</td>
                 <td>{{ c.jefe }}</td>
-                <td style="font-size: 9px; line-height: 1.3;">
+                <td style="font-size: 8.5px; line-height: 1.2;">
                     {% if c.fechas_especificas %}
-                    {% for f in c.fechas_especificas.split(', ') %}
-                    {{ f }}{% if not loop.last %}<br>{% endif %}
-                    {% endfor %}
+                        {% for f in c.fechas_especificas.split(',') %}
+                            <div style="line-height: 1.1; margin-bottom: 1px;">{{ f.strip() }}</div>
+                        {% endfor %}
                     {% else %}
-                    -
+                        -
                     {% endif %}
                 </td>
                 <td class="td-centro">{{ c.num_bitacoras }}</td>
@@ -123,21 +132,19 @@
             {% endfor %}
             {% if not lista_consultores %}
             <tr>
-                <td colspan="7" class="td-centro" style="padding: 20px;">No se encontraron registros para este periodo.
-                </td>
+                <td colspan="7" class="td-centro" style="padding: 20px;">No se encontraron registros para este periodo.</td>
             </tr>
             {% endif %}
         </tbody>
     </table>
 
-    <p><span class="negrita">Total de consultores especializados asignados en el mes:</span> {{ total_consultores }}</p>
+    <p><span class="negrita">Total de consultores especializados asignados:</span> {{ total_consultores }}</p>
 
     <div class="seccion-firma">
-        <p style="text-align: center; margin-bottom: 50px;">Atte:</p>
+        <p style="text-align: center; margin-bottom: 45px;">Atte:</p>
         <p style="text-align: center; margin: 0;">_________________________________________</p>
         <p class="negrita" style="text-align: center; margin-top: 5px;">{{ responsable }}</p>
     </div>
 
 </body>
-
 </html>

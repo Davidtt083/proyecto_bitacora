@@ -6,13 +6,31 @@
     <style>
         @page {
             size: A4 landscape;
-            margin: 1cm;
+            margin: 1.5cm 1cm 1.5cm 1cm;
+            
+            /* Marco estático para la paginación en el pie de página */
+            @frame footer_frame {
+                -pdf-frame-content: footer_content;
+                bottom: 0.5cm;
+                margin-left: 1cm;
+                margin-right: 1cm;
+                height: 0.8cm;
+            }
         }
         body {
             font-family: Helvetica, Arial, sans-serif;
             font-size: 8px; 
             color: #333;
         }
+
+        /* Encabezado con fecha y hora */
+        .alineacion-derecha { 
+            text-align: right; 
+            font-size: 8.5px; 
+            color: #555; 
+            margin-bottom: 8px; 
+        }
+
         h2 {
             color: #2c3e50;
             margin-top: 0;
@@ -25,7 +43,7 @@
             margin-bottom: 10px;
         }
         
-        /* Tarjeta de perfil construida directamente como tabla para evitar bugs de availWidth */
+        /* Tarjeta de perfil construida directamente como tabla */
         .profile-table {
             width: 100%;
             border-collapse: collapse;
@@ -60,7 +78,7 @@
         }
         .main-table th, .main-table td {
             border: 1px solid #94a3b8;
-            padding: 3px 4px; /* Padding optimizado para no saturar las columnas */
+            padding: 3px 4px;
             text-align: left;
             vertical-align: top;
             word-wrap: break-word;
@@ -80,14 +98,31 @@
             line-height: 1.15;
             -pdf-word-wrap: CJK;
         }
+
+        /* Estilo de la paginación en el pie de página */
+        #footer_content {
+            text-align: right;
+            font-size: 7.5px;
+            color: #777;
+        }
     </style>
 </head>
 <body>
 
+    <!-- PIE DE PÁGINA CON PAGINACIÓN AUTOMÁTICA -->
+    <div id="footer_content">
+        Página <pdf:pagenumber> de <pdf:pagecount>
+    </div>
+
+    <!-- ENCABEZADO CON FECHA Y HORA DE EMISIÓN -->
+    <div class="alineacion-derecha">
+        Ciudad de México, a {{ fecha_hoy }}
+    </div>
+
     <h2>Reporte Individual de Bitácoras</h2>
     <div class="subtitle">Consultor especializado: <strong>{{ usuario.nombre }}</strong></div>
 
-    <!-- Sección Informativa del Consultor (Estructura de tabla directa sin divs con padding) -->
+    <!-- Sección Informativa del Consultor -->
     <table class="profile-table">
         <tr>
             <td style="width: 25%;">
