@@ -1,157 +1,140 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
     <title>Reporte de Bitácoras - {{ usuario.nombre }}</title>
     <style>
         @page {
             size: A4 landscape;
-            /* Formato horizontal para optimizar el espacio de las columnas */
             margin: 1cm;
         }
-
         body {
             font-family: Helvetica, Arial, sans-serif;
-            font-size: 8px;
+            font-size: 8px; 
             color: #333;
         }
-
         h2 {
             color: #2c3e50;
             margin-top: 0;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
+            font-size: 14px;
         }
-
         .subtitle {
-            font-size: 10px;
-            color: #7f8c8d;
-            margin-bottom: 15px;
+            font-size: 9px;
+            color: #64748b;
+            margin-bottom: 10px;
         }
-
-        /* Tarjeta de perfil en PDF (Usamos tablas para garantizar compatibilidad con xhtml2pdf) */
-        .profile-card {
-            background-color: #f8fafc;
-            border: 1px solid #cbd5e1;
-            padding: 8px;
-            margin-bottom: 15px;
-        }
-
+        
+        /* Tarjeta de perfil construida directamente como tabla para evitar bugs de availWidth */
         .profile-table {
             width: 100%;
             border-collapse: collapse;
+            background-color: #f8fafc;
+            border: 1px solid #cbd5e1;
+            margin-bottom: 12px;
         }
-
         .profile-table td {
             border: none;
-            padding: 4px;
-            font-size: 8px;
+            padding: 5px 6px;
+            font-size: 7.5px;
             vertical-align: top;
         }
-
         .label {
             font-weight: bold;
             color: #64748b;
             text-transform: uppercase;
-            font-size: 7px;
+            font-size: 6.5px;
+            display: block;
+            margin-bottom: 2px;
         }
-
         .value {
             color: #1e293b;
             font-weight: bold;
+            font-size: 7.5px;
         }
 
-        /* Tabla Principal */
+        /* Tabla Principal de Bitácoras */
         .main-table {
             width: 100%;
             border-collapse: collapse;
         }
-
-        .main-table th,
-        .main-table td {
+        .main-table th, .main-table td {
             border: 1px solid #94a3b8;
-            padding: 6px;
+            padding: 3px 4px; /* Padding optimizado para no saturar las columnas */
             text-align: left;
             vertical-align: top;
             word-wrap: break-word;
         }
-
         .main-table th {
             background-color: #475569;
             color: white;
             font-weight: bold;
             text-align: center;
-            font-size: 8px;
-        }
-
-        .text-center {
-            text-align: center;
-        }
-
-        .texto-largo {
             font-size: 7.5px;
-            line-height: 1.2;
-            text-align: justify;
-            -pdf-word-wrap: CJK; /* Propiedad exclusiva de xhtml2pdf para cortar palabras sin espacios */
+        }
+        .text-center { 
+            text-align: center; 
+        }
+        .texto-largo {
+            font-size: 7px;
+            line-height: 1.15;
+            -pdf-word-wrap: CJK;
         }
     </style>
 </head>
-
 <body>
 
     <h2>Reporte Individual de Bitácoras</h2>
     <div class="subtitle">Consultor especializado: <strong>{{ usuario.nombre }}</strong></div>
 
-    <!-- Sección Informativa del Consultor -->
-    <div class="profile-card">
-        <table class="profile-table">
-            <tr>
-                <td style="width: 25%;">
-                    <span class="label">Puesto / Cargo</span><br>
-                    <span class="value">{{ usuario.puesto or '-' }}</span>
-                </td>
-                <td style="width: 25%;">
-                    <span class="label">Teléfono</span><br>
-                    <span class="value">{{ usuario.telefono or 'N/A' }}</span>
-                </td>
-                <td style="width: 25%;">
-                    <span class="label">Empresa Cliente</span><br>
-                    <span class="value">{{ usuario.empresa or '-' }}</span>
-                </td>
-                <td style="width: 25%;">
-                    <span class="label">Empresa Origen</span><br>
-                    <span class="value">{{ usuario.empresa_origen or '-' }}</span>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <span class="label">Estatus Usuario</span><br>
-                    <span class="value">{% if usuario.activo %}Vigente{% else %}No Vigente{% endif %}</span>
-                </td>
-                <td>
-                    <span class="label">Proyecto Actual</span><br>
-                    <span class="value">{{ usuario.proyecto_actual or '-' }}</span>
-                </td>
-                <td>
-                    <span class="label">Jefe Directo</span><br>
-                    <span class="value">{{ usuario.jefe_directo or '-' }}</span>
-                </td>
-                <td>
-                    <span class="label">Cargo Jefe</span><br>
-                    <span class="value">{{ usuario.cargo_jefe or '-' }}</span>
-                </td>
-            </tr>
-        </table>
-    </div>
+    <!-- Sección Informativa del Consultor (Estructura de tabla directa sin divs con padding) -->
+    <table class="profile-table">
+        <tr>
+            <td style="width: 25%;">
+                <span class="label">Puesto / Cargo</span>
+                <span class="value">{{ usuario.puesto or '-' }}</span>
+            </td>
+            <td style="width: 25%;">
+                <span class="label">Teléfono</span>
+                <span class="value">{{ usuario.telefono or 'N/A' }}</span>
+            </td>
+            <td style="width: 25%;">
+                <span class="label">Empresa Cliente</span>
+                <span class="value">{{ usuario.empresa or '-' }}</span>
+            </td>
+            <td style="width: 25%;">
+                <span class="label">Empresa Origen</span>
+                <span class="value">{{ usuario.empresa_origen or '-' }}</span>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <span class="label">Estatus Usuario</span>
+                <span class="value">{% if usuario.activo %}Vigente{% else %}No Vigente{% endif %}</span>
+            </td>
+            <td>
+                <span class="label">Proyecto</span>
+                <span class="value">{{ usuario.proyecto_actual or '-' }}</span>
+            </td>
+            <td>
+                <span class="label">Jefe Directo</span>
+                <span class="value">{{ usuario.jefe_directo or '-' }}</span>
+            </td>
+            <td>
+                <span class="label">Cargo Jefe</span>
+                <span class="value">{{ usuario.cargo_jefe or '-' }}</span>
+            </td>
+        </tr>
+    </table>
 
     <!-- Tabla Simplificada de Bitácoras -->
     <table class="main-table">
         <thead>
             <tr>
-                <th style="width: 12%;">Periodo del reporte</th>
-                <th style="width: 12%;">Fechas específicas</th>
-                <th style="width: 8%; text-align: center;">Días laborados</th>
-                <th style="width: 30%;">Actividades realizadas</th>
+                <th style="width: 10%;">Periodo</th>
+                <th style="width: 10%;">Fechas específicas</th>
+                <th style="width: 6%; text-align: center;">Días</th>
+                <th style="width: 36%;">Actividades realizadas</th>
                 <th style="width: 11%;">Herramientas</th>
                 <th style="width: 11%;">Entregable generado</th>
                 <th style="width: 8%;">Medio</th>
@@ -161,64 +144,69 @@
         <tbody>
             {% for r in reportes %}
             <tr>
-                <td class="text-center" style="font-weight: bold; color: #0056b3;">
+                <!-- 1. Periodo -->
+                <td class="text-center" style="font-weight: bold; color: #0056b3; font-size: 7px;">
                     {{ r.rango_periodo }}
                 </td>
-                <td class="texto-largo">{{ r.fechas_especificas }}</td>
-                <td class="text-center">{{ r.dias_contados }} días</td>
-                <td class="texto-largo">{{ r.actividades }}</td>
+
+                <!-- 2. Fechas específicas (Con bloques div individuales) -->
+                <td class="texto-largo">
+                    {% if r.fechas_especificas %}
+                        {% for f in r.fechas_especificas.split(',') %}
+                            <div style="line-height: 1.1; margin-bottom: 1px;">{{ f.strip() }}</div>
+                        {% endfor %}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+
+                <!-- 3. Días laborados -->
+                <td class="text-center" style="font-size: 7.5px;">{{ r.dias_contados }}</td>
+
+                <!-- 4. Actividades completas sin recortes -->
+                <td class="texto-largo">
+                    {{ r.actividades }}
+                </td>
+
+                <!-- 5. Herramientas -->
                 <td class="texto-largo">{{ r.herramientas_utilizadas or '-' }}</td>
-                <!-- Columna Entregable -->
+
+                <!-- 6. Entregable generado -->
                 <td class="texto-largo" style="word-wrap: break-word;">
                     {% set ent = r.entregable_generado or '' %}
                     {% if ent and (ent.startswith('http://') or ent.startswith('https://') or ent.startswith('www.')) %}
-                    <a href="{{ ent if ent.startswith('http') else 'http://' ~ ent }}" target="_blank"
-                        style="color: #0056b3; font-weight: bold; text-decoration: none;">
-                        🔗 Abrir entregable
-                    </a>
+                        <a href="{{ ent if ent.startswith('http') else 'http://' ~ ent }}" target="_blank" style="color: #0056b3; font-weight: bold; text-decoration: none;">
+                            🔗 Abrir entregable
+                        </a>
                     {% else %}
-                    {{ ent or '-' }}
+                        {{ ent or '-' }}
                     {% endif %}
                 </td>
 
-                <!-- Columna Medio -->
-                <!-- Columna Entregable (Texto completo o Enlace corto interactivo) -->
-                <td class="texto-largo" style="word-wrap: break-word;">
-                    {% set ent = r.entregable_generado or '' %}
-                    {% if ent and (ent.startswith('http://') or ent.startswith('https://') or ent.startswith('www.')) %}
-                    <a href="{{ ent if ent.startswith('http') else 'http://' ~ ent }}" target="_blank"
-                        style="color: #0056b3; font-weight: bold; text-decoration: none;">
-                        🔗 Abrir entregable
-                    </a>
-                    {% else %}
-                    {{ ent or '-' }}
-                    {% endif %}
-                </td>
-
-                <!-- Columna Medio (Texto completo o Enlace corto interactivo) -->
+                <!-- 7. Medio entregable -->
                 <td class="texto-largo" style="word-wrap: break-word;">
                     {% set med = r.medio_entregable or '' %}
                     {% if med and (med.startswith('http://') or med.startswith('https://') or med.startswith('www.')) %}
-                    <a href="{{ med if med.startswith('http') else 'http://' ~ med }}" target="_blank"
-                        style="color: #0056b3; font-weight: bold; text-decoration: none;">
-                        🔗 Ver medio / link
-                    </a>
+                        <a href="{{ med if med.startswith('http') else 'http://' ~ med }}" target="_blank" style="color: #0056b3; font-weight: bold; text-decoration: none;">
+                            🔗 Ver medio / link
+                        </a>
                     {% else %}
-                    {{ med or '-' }}
+                        {{ med or '-' }}
                     {% endif %}
                 </td>
+
+                <!-- 8. Incidencias -->
                 <td class="texto-largo" style="color: #dc3545;">{{ r.incidencias or 'Ninguna' }}</td>
             </tr>
             {% endfor %}
+
             {% if not reportes %}
             <tr>
-                <td colspan="8" class="text-center" style="padding: 20px; font-size: 10px;">No se encontraron registros
-                    de bitácoras para este usuario.</td>
+                <td colspan="8" class="text-center" style="padding: 15px; font-size: 9px;">No se encontraron registros de bitácoras para este usuario.</td>
             </tr>
             {% endif %}
         </tbody>
     </table>
 
 </body>
-
 </html>

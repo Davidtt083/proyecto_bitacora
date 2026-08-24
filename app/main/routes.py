@@ -1,4 +1,6 @@
 from io import BytesIO
+from datetime import datetime, timedelta
+import calendar
 from flask import render_template, flash, redirect, url_for, request, abort, make_response
 from xhtml2pdf import pisa
 from flask_login import login_required, current_user
@@ -7,22 +9,19 @@ from app import db
 from app.main import bp
 from app.main.forms import BitacoraForm, EditUserAdminForm, EditReportAdminForm
 from app.models import Bitacora, User  
-from datetime import datetime, timedelta
-import calendar
+
 
 # --- RUTA PRINCIPAL (DASHBOARD) ---
 @bp.route('/', methods=['GET'])
 @bp.route('/index', methods=['GET'])
 @login_required
 def index():
-    # Redirecciones según el rol
     if current_user.rol == 'cliente':
         return redirect(url_for('main.cliente_dashboard'))
     
     if current_user.rol == 'admin':
         return redirect(url_for('main.admin_home'))
 
-    # Si es un usuario normal, ahora verá su pantalla de inicio
     return render_template('main/user_home.html', title='Inicio')
 
 
@@ -44,7 +43,6 @@ def nueva_bitacora():
         form.proyecto_actual.data = current_user.proyecto_actual
 
     if form.validate_on_submit():
-        # VALIDACIÓN: EVITAR DÍAS REPETIDOS (DIARIO)
         dia_nuevo = form.periodo_semanal.data.strip()
         bitacoras_usuario = Bitacora.query.filter_by(user_id=current_user.id).all()
         
@@ -79,50 +77,40 @@ def nueva_bitacora():
         db.session.add(reporte)
         db.session.commit()
         flash('¡Tu reporte de bitácora ha sido guardado exitosamente!', 'guardado')
-        # Redirigimos a la misma página para que SweetAlert2 dispare la alerta y luego redirija con JS
         return redirect(url_for('main.nueva_bitacora')) 
 
     return render_template('main/index.html', title='Nueva Bitácora', form=form)
 
 
-# --- NUEVA RUTA: VER MIS BITÁCORAS ---
+# --- RUTA: VER MIS BITÁCORAS ---
 @bp.route('/mis_bitacoras')
 @login_required
 def mis_bitacoras():
     if current_user.rol == 'cliente':
         return redirect(url_for('main.cliente_dashboard'))
 
-    # Obtener las fechas desde la URL (si existen)
     fecha_inicio = request.args.get('fecha_inicio', '')
     fecha_fin = request.args.get('fecha_fin', '')
 
-    # Traemos las bitácoras pertenecientes al usuario actual
     query = Bitacora.query.filter_by(user_id=current_user.id)
-    reportes_base = query.all() # Obtenemos la lista base
+    reportes_base = query.all()
 
-    # Reutilizar el filtrado de fechas real del admin
     if fecha_inicio or fecha_fin:
         reportes = filtrar_reportes_por_fecha(reportes_base, 'rango', fecha_inicio, fecha_fin, '')
     else:
         reportes = reportes_base
 
-    # --- ORDENAR CRONOLÓGICAMENTE POR DÍA DE ACTIVIDAD (Descendente) ---
     def obtener_fecha_ordenamiento(reporte):
         if not reporte.periodo_semanal:
             return datetime.min.date()
         try:
-            # Extrae la primera fecha por si hay registros antiguos agrupados (ej: "27/07/2026 | 28/07/2026")
             fecha_str = [d.strip() for d in reporte.periodo_semanal.split('|') if d.strip()][0]
-            # Convertimos a objeto date real para un ordenamiento matemáticamente correcto
             return datetime.strptime(fecha_str, '%d/%m/%Y').date()
         except (ValueError, IndexError):
-            # En caso de error o fecha vacía, lo manda al final de la lista
             return datetime.min.date()
 
-    # Ordenar la lista final usando nuestra función clave (los más nuevos primero)
     reportes = sorted(reportes, key=obtener_fecha_ordenamiento, reverse=True)
 
-    # Formatear el periodo visual para la tabla
     for r in reportes:
         r.periodo_visual = obtener_rango_semanal(r.periodo_semanal)
 
@@ -133,7 +121,7 @@ def mis_bitacoras():
                            fecha_fin=fecha_fin)
 
 
-# --- FUNCIÓN AUXILIAR PARA FILTRAR FECHAS REALES DE ACTIVIDAD ---
+# --- FUNCIÓN AUXILIAR PARA FILTRAR FECHAS ---
 def filtrar_reportes_por_fecha(reportes_base, tipo_filtro, fecha_inicio, fecha_fin, fechas_especificas):
     reportes_finales = []
     
@@ -177,6 +165,21 @@ def obtener_nombre_mes(yyyy_mm):
     return f"{meses[int(mes)-1]} {año}"
 
 
+def obtener_rango_semanal(cadena_fechas):
+    if ' | ' in cadena_fechas:
+        try:
+            primera_fecha_str = cadena_fechas.split(' | ')[0]
+            fecha_dt = datetime.strptime(primera_fecha_str, '%d/%m/%Y')
+            lunes = fecha_dt - timedelta(days=fecha_dt.weekday())
+            viernes = lunes + timedelta(days=4)
+            return f"Lun {lunes.strftime('%d/%m')} - Vie {viernes.strftime('%d/%m')}"
+        except:
+            return cadena_fechas
+    else:
+        return cadena_fechas
+
+
+# --- RUTAS DE ADMINISTRACIÓN ---
 @bp.route('/admin/inicio')
 @login_required
 def admin_home():
@@ -223,24 +226,19 @@ def admin_dashboard():
     
     empresas = [e[0] for e in db.session.query(User.empresa).distinct().all() if e[0]]
 
-    # Formatear datos individuales para cada fila de la bitácora
     for r in reportes:
         if r.periodo_semanal:
             dias_lista = [d.strip() for d in r.periodo_semanal.split('|') if d.strip()]
-            
-            # --- NUEVO: ORDENAR FECHAS INTERNAS Y GENERAR FORMATO ISO PARA ORDENAMIENTO EN JS ---
             try:
                 fechas_obj = sorted([datetime.strptime(d, '%d/%m/%Y').date() for d in dias_lista])
                 dias_lista = [f.strftime('%d/%m/%Y') for f in fechas_obj]
-                # Guardamos la fecha más antigua en formato YYYY-MM-DD para el data-sort-value
                 r.fecha_iso = fechas_obj[0].strftime('%Y-%m-%d')
             except ValueError:
                 r.fecha_iso = "0000-00-00"
-            
+
             r.dias_contados = len(dias_lista)
             r.fechas_especificas = ", ".join(dias_lista)
             
-            # ELIMINAR ETIQUETA "Día" Y DAR FORMATO "INICIO - FIN" COMPACTO
             if len(dias_lista) > 1:
                 r.rango_periodo = f"{dias_lista[0]} - {dias_lista[-1]}"
             elif len(dias_lista) == 1:
@@ -253,7 +251,6 @@ def admin_dashboard():
             r.rango_periodo = "-"
             r.fecha_iso = "0000-00-00"
 
-    # ORDENAR CRONOLÓGICAMENTE DE MENOR A MAYOR (ASCENDENTE)
     def obtener_fecha_sort(rep):
         if not rep.periodo_semanal:
             return datetime.min.date()
@@ -263,10 +260,8 @@ def admin_dashboard():
         except (ValueError, IndexError):
             return datetime.min.date()
 
-    # reverse=False ordena de forma ascendente (menor a mayor)
     reportes = sorted(reportes, key=obtener_fecha_sort, reverse=False)
 
-    # RETORNAR LA RESPUESTA CORRECTA (¡Esto es lo que se había omitido!)
     return render_template('main/admin_dashboard.html', 
                            title='Panel Admin', 
                            reportes=reportes,
@@ -279,20 +274,6 @@ def admin_dashboard():
                            fechas_especificas=fechas_especificas,
                            empresas=empresas)
 
-
-def obtener_rango_semanal(cadena_fechas):
-    if ' | ' in cadena_fechas:
-        try:
-            primera_fecha_str = cadena_fechas.split(' | ')[0]
-            fecha_dt = datetime.strptime(primera_fecha_str, '%d/%m/%Y')
-            lunes = fecha_dt - timedelta(days=fecha_dt.weekday())
-            viernes = lunes + timedelta(days=4)
-            return f"Lun {lunes.strftime('%d/%m')} - Vie {viernes.strftime('%d/%m')}"
-        except:
-            return cadena_fechas
-    else:
-        return cadena_fechas
-    
 
 @bp.route('/cliente/dashboard')
 @login_required
@@ -318,6 +299,7 @@ def cliente_dashboard():
                            reportes=reportes)
 
 
+# --- GESTIÓN DE USUARIOS (CON BÚSQUEDA Y ESTATUS) ---
 @bp.route('/admin/usuarios')
 @login_required
 def users_list():
@@ -328,7 +310,6 @@ def users_list():
     query = User.query
 
     if search_query:
-        # 1. Filtros estándar de texto
         filtros = [
             User.nombre.ilike(f'%{search_query}%'),
             User.email.ilike(f'%{search_query}%'),
@@ -337,21 +318,14 @@ def users_list():
             User.rol.ilike(f'%{search_query}%')
         ]
         
-        # 2. Filtro inteligente para el Estatus (Booleano)
         q_lower = search_query.lower().strip()
-        
-        # Si escribe "no vigente" o "inactivo", filtramos por activo = False
         if 'no vigente' in q_lower or 'inactivo' in q_lower:
             filtros.append(User.activo == False)
-            
-        # Si escribe "vigente" o "activo", filtramos por activo = True
         elif 'vigente' in q_lower or 'activo' in q_lower:
             filtros.append(User.activo == True)
 
-        # 3. Aplicamos todos los filtros usando desempaquetado de listas (*filtros)
         query = query.filter(or_(*filtros))
 
-    # Ordenar y obtener resultados
     usuarios = query.order_by(User.nombre).all()
     
     return render_template('main/users_list.html', 
@@ -422,7 +396,104 @@ def delete_user(user_id):
     db.session.delete(user)
     db.session.commit()
     flash(f'El usuario {user.nombre} y TODOS sus reportes han sido eliminados.', 'success')
-    return redirect(url_for('main.admin_dashboard'))
+    return redirect(url_for('main.users_list'))
+
+
+# --- HISTORIAL Y EXPORTACIÓN DE BITÁCORAS DE USUARIO INDIVIDUAL ---
+@bp.route('/admin/usuario/<int:user_id>/bitacoras')
+@login_required
+def user_reports_admin(user_id):
+    if current_user.rol != 'admin':
+        abort(403)
+        
+    usuario = User.query.get_or_404(user_id)
+    reportes = Bitacora.query.filter_by(user_id=user_id).order_by(Bitacora.timestamp.desc()).all()
+
+    for r in reportes:
+        if r.periodo_semanal:
+            dias_lista = [d.strip() for d in r.periodo_semanal.split('|') if d.strip()]
+            try:
+                fechas_obj = sorted([datetime.strptime(d, '%d/%m/%Y').date() for d in dias_lista])
+                dias_lista = [f.strftime('%d/%m/%Y') for f in fechas_obj]
+                r.fecha_iso = fechas_obj[0].strftime('%Y-%m-%d')
+            except ValueError:
+                r.fecha_iso = "0000-00-00"
+            
+            r.dias_contados = len(dias_lista)
+            r.fechas_especificas = ", ".join(dias_lista)
+            
+            if len(dias_lista) > 1:
+                r.rango_periodo = f"{dias_lista[0]} - {dias_lista[-1]}"
+            elif len(dias_lista) == 1:
+                r.rango_periodo = dias_lista[0]
+            else:
+                r.rango_periodo = "-"
+        else:
+            r.dias_contados = 0
+            r.fechas_especificas = "-"
+            r.rango_periodo = "-"
+            r.fecha_iso = "0000-00-00"
+
+    def obtener_fecha_sort(rep):
+        if not rep.periodo_semanal:
+            return datetime.min.date()
+        try:
+            f_str = [d.strip() for d in rep.periodo_semanal.split('|') if d.strip()][0]
+            return datetime.strptime(f_str, '%d/%m/%Y').date()
+        except (ValueError, IndexError):
+            return datetime.min.date()
+
+    reportes = sorted(reportes, key=obtener_fecha_sort, reverse=True)
+
+    return render_template('main/user_reports_admin.html', 
+                           title=f'Bitácoras de {usuario.nombre}', 
+                           usuario=usuario, 
+                           reportes=reportes)
+
+
+@bp.route('/admin/usuario/<int:user_id>/exportar_pdf')
+@login_required
+def user_reports_pdf(user_id):
+    if current_user.rol != 'admin':
+        abort(403)
+        
+    usuario = User.query.get_or_404(user_id)
+    reportes = Bitacora.query.filter_by(user_id=user_id).order_by(Bitacora.timestamp.desc()).all()
+
+    for r in reportes:
+        if r.periodo_semanal:
+            dias_lista = [d.strip() for d in r.periodo_semanal.split('|') if d.strip()]
+            r.dias_contados = len(dias_lista)
+            r.fechas_especificas = ", ".join(dias_lista)
+            
+            if len(dias_lista) > 1:
+                r.rango_periodo = f"{dias_lista[0]} - {dias_lista[-1]}"
+            elif len(dias_lista) == 1:
+                r.rango_periodo = dias_lista[0]
+            else:
+                r.rango_periodo = "-"
+        else:
+            r.dias_contados = 0
+            r.fechas_especificas = "-"
+            r.rango_periodo = "-"
+
+    html = render_template('main/pdf_user_reports.html', 
+                           usuario=usuario, 
+                           reportes=reportes)
+    
+    result = BytesIO()
+    pdf = pisa.CreatePDF(BytesIO(html.encode('utf-8')), dest=result, encoding='utf-8')
+
+    if pdf.err:
+        flash('Hubo un error al generar el PDF.', 'danger')
+        return redirect(url_for('main.user_reports_admin', user_id=user_id))
+
+    response = make_response(result.getvalue())
+    response.headers['Content-Type'] = 'application/pdf'
+    nombre_archivo = f"bitacoras_{usuario.nombre.replace(' ', '_').lower()}.pdf"
+    response.headers['Content-Disposition'] = f'attachment; filename={nombre_archivo}'
+    
+    return response
 
 
 @bp.route('/admin/bitacora/<int:report_id>/eliminar', methods=['POST'])
@@ -438,6 +509,7 @@ def delete_report(report_id):
     return redirect(url_for('main.admin_dashboard'))
 
 
+# --- EXPORTAR INFORME MENSUAL / GENERAL PDF ---
 @bp.route('/admin/exportar_pdf')
 @login_required
 def export_pdf():
@@ -452,7 +524,6 @@ def export_pdf():
     fecha_fin = request.args.get('fecha_fin', '')
     fechas_especificas = request.args.get('fechas_especificas', '')
     
-    # El responsable ahora es automáticamente el administrador logueado
     responsable = current_user.nombre
 
     if not empresa_filter:
@@ -478,11 +549,9 @@ def export_pdf():
     if status_filter:
         query = query.filter(Bitacora.status == status_filter)
 
-    # Filtrar fechas reales
     reportes_base = query.order_by(Bitacora.timestamp.desc()).all()
     reportes = filtrar_reportes_por_fecha(reportes_base, tipo_filtro, fecha_inicio, fecha_fin, fechas_especificas)
 
-    # 1. Determinar Título del PDF para el encabezado
     headline_title = "Informe General"
     if tipo_filtro == 'rango' and (fecha_inicio or fecha_fin):
         if fecha_inicio and fecha_fin:
@@ -496,9 +565,15 @@ def export_pdf():
             f_fin = datetime.strptime(fecha_fin, '%Y-%m-%d').strftime('%d/%m/%Y')
             headline_title = f"Informe hasta el {f_fin}"
     elif tipo_filtro == 'especificas' and fechas_especificas:
-        headline_title = f"Informe de días específicos: {fechas_especificas}"
+        try:
+            fechas_list = [d.strip() for d in fechas_especificas.split(',') if d.strip()]
+            fechas_ordenadas = sorted(fechas_list, key=lambda x: datetime.strptime(x, '%d/%m/%Y'))
+            fechas_especificas_clean = ", ".join(fechas_ordenadas)
+        except ValueError:
+            fechas_especificas_clean = fechas_especificas
 
-    # 2. Agrupar consultores y recopilar sus fechas específicas
+        headline_title = f"Informe de días específicos: {fechas_especificas_clean}"
+
     consultores_agrupados = {}
     empresa_origen_general = "" 
     
@@ -520,32 +595,15 @@ def export_pdf():
         if r.periodo_semanal:
             dias_str = [d.strip() for d in r.periodo_semanal.split('|') if d.strip()]
             num_dias = len(dias_str)
-            
-            # Ajuste clave: Sumamos el número de días reales a las bitácoras registradas
             consultores_agrupados[usuario_id]['num_bitacoras'] += num_dias
             consultores_agrupados[usuario_id]['dias_asignados'] += num_dias
             consultores_agrupados[usuario_id]['fechas_especificas_list'].extend(dias_str)
         else:
-            # Fallback de respaldo por si no tiene fechas ingresadas
             consultores_agrupados[usuario_id]['num_bitacoras'] += 1
 
-    # Dar formato ordenado a las fechas específicas de cada consultor
     for cid, data in consultores_agrupados.items():
         if data['fechas_especificas_list']:
             try:
-                # Ordenar fechas reales de forma cronológica
-                fechas_unicas = sorted(list(set(data['fechas_especificas_list'])), key=lambda x: datetime.strptime(x, '%d/%m/%Y'))
-                data['fechas_especificas'] = ", ".join(fechas_unicas)
-            except ValueError:
-                data['fechas_especificas'] = ", ".join(sorted(list(set(data['fechas_especificas_list']))))
-        else:
-            data['fechas_especificas'] = "-"
-
-    # Dar formato ordenado a las fechas específicas de cada consultor
-    for cid, data in consultores_agrupados.items():
-        if data['fechas_especificas_list']:
-            try:
-                # Ordenar fechas reales de forma cronológica
                 fechas_unicas = sorted(list(set(data['fechas_especificas_list'])), key=lambda x: datetime.strptime(x, '%d/%m/%Y'))
                 data['fechas_especificas'] = ", ".join(fechas_unicas)
             except ValueError:
@@ -563,7 +621,6 @@ def export_pdf():
     hoy = datetime.now()
     fecha_hoy = f"{hoy.day} de {meses_es[hoy.month-1]} de {hoy.year}"
 
-    # 3. Determinar nombre dinámico para la descarga del archivo PDF
     hoy_str = hoy.strftime('%d-%m-%Y')
     if tipo_filtro == 'rango':
         ini_str = datetime.strptime(fecha_inicio.strip(), '%Y-%m-%d').strftime('%d-%m-%Y') if fecha_inicio else "inicio"
@@ -595,6 +652,7 @@ def export_pdf():
     return response
 
 
+# --- EXPORTAR TABLA DE BITÁCORAS PDF (HORIZONTAL) ---
 @bp.route('/admin/exportar_tabla_pdf')
 @login_required
 def export_table_pdf():
@@ -609,7 +667,6 @@ def export_table_pdf():
     fecha_fin = request.args.get('fecha_fin', '')
     fechas_especificas = request.args.get('fechas_especificas', '')
 
-    # Leer parámetros de ordenamiento enviados desde el Dashboard
     sort_col = request.args.get('sort_col', type=int)
     sort_dir = request.args.get('sort_dir', 'asc')
 
@@ -631,16 +688,12 @@ def export_table_pdf():
     if status_filter:
         query = query.filter(Bitacora.status == status_filter)
 
-    # Filtrar fechas reales
     reportes_base = query.order_by(Bitacora.timestamp.desc()).all()
     reportes = filtrar_reportes_por_fecha(reportes_base, tipo_filtro, fecha_inicio, fecha_fin, fechas_especificas)
 
-    # Formatear datos individuales para cada fila de la bitácora
     for r in reportes:
         if r.periodo_semanal:
             dias_lista = [d.strip() for d in r.periodo_semanal.split('|') if d.strip()]
-            
-            # Ordenar fechas internas del reporte cronológicamente
             try:
                 fechas_obj = sorted([datetime.strptime(d, '%d/%m/%Y').date() for d in dias_lista])
                 dias_lista = [f.strftime('%d/%m/%Y') for f in fechas_obj]
@@ -650,11 +703,10 @@ def export_table_pdf():
             r.dias_contados = len(dias_lista)
             r.fechas_especificas = ", ".join(dias_lista)
             
-            # ELIMINAR COMPLETAMENTE "Día" / "Semana del" Y USAR FORMATO LIMPIO
             if len(dias_lista) > 1:
                 r.rango_periodo = f"{dias_lista[0]} - {dias_lista[-1]}"
             elif len(dias_lista) == 1:
-                r.rango_periodo = dias_lista[0] # Limpio
+                r.rango_periodo = dias_lista[0]
             else:
                 r.rango_periodo = "-"
         else:
@@ -662,13 +714,11 @@ def export_table_pdf():
             r.fechas_especificas = "-"
             r.rango_periodo = "-"
 
-    # --- NUEVO: SISTEMA DE RE-ORDENAMIENTO EXTACTO DEL PDF (COINCIDE CON LA PANTALLA) ---
     if sort_col is not None:
         is_reverse = (sort_dir == 'desc')
         
-        # Mapeo de lógica de ordenamiento según la columna del HTML
         def obtener_llave_ordenamiento(rep):
-            if sort_col in [0, 1]: # Periodo o Fechas específicas
+            if sort_col in [0, 1]:
                 if not rep.periodo_semanal:
                     return datetime.min.date()
                 try:
@@ -708,7 +758,6 @@ def export_table_pdf():
 
         reportes = sorted(reportes, key=obtener_llave_ordenamiento, reverse=is_reverse)
     else:
-        # Ordenamiento ascendente cronológico por defecto
         def obtener_fecha_sort(rep):
             if not rep.periodo_semanal:
                 return datetime.min.date()
@@ -733,6 +782,7 @@ def export_table_pdf():
     return response
 
 
+# --- EDITAR FILA DE BITÁCORA COMO ADMIN ---
 @bp.route('/admin/bitacora/<int:report_id>/editar', methods=['GET', 'POST'])
 @login_required
 def edit_report(report_id):
@@ -778,22 +828,21 @@ def edit_report(report_id):
 
     return render_template('main/edit_report.html', title='Editar Fila', form=form, reporte=reporte)
 
+
+# --- EDITAR MI BITÁCORA (USUARIO) ---
 @bp.route('/mis_bitacoras/<int:report_id>/editar', methods=['GET', 'POST'])
 @login_required
 def edit_my_report(report_id):
     reporte = Bitacora.query.get_or_404(report_id)
     
-    # Seguridad: Asegurar que el reporte le pertenece de verdad al usuario logueado
     if reporte.user_id != current_user.id:
         abort(403)
         
     form = BitacoraForm()
     
     if form.validate_on_submit():
-        # --- NUEVA VALIDACIÓN: EVITAR DÍAS REPETIDOS (DIARIO) EN EDICIÓN ---
         dia_nuevo = form.periodo_semanal.data.strip()
         
-        # Consultamos las bitácoras del usuario EXCLUYENDO el reporte actual que se está editando
         bitacoras_usuario = Bitacora.query.filter(
             Bitacora.user_id == current_user.id,
             Bitacora.id != report_id
@@ -809,11 +858,8 @@ def edit_my_report(report_id):
         
         if dias_duplicados:
             flash(f'Ya tienes una actividad registrada con fecha: {dia_nuevo}. Selecciona otro día.', 'error')
-            # Si hay error, volvemos a renderizar el formulario con los datos para que no los pierda
             return render_template('main/edit_my_report.html', title='Corregir Bitácora', form=form, reporte=reporte)
-        # --- FIN DE LA VALIDACIÓN ---
         
-        # Actualizamos únicamente los campos permitidos según requerimientos del PDF
         reporte.periodo_semanal = form.periodo_semanal.data
         reporte.proyecto_actual = form.proyecto_actual.data
         reporte.actividades = form.actividades.data
@@ -828,7 +874,6 @@ def edit_my_report(report_id):
         return redirect(url_for('main.edit_my_report', report_id=reporte.id))
         
     elif request.method == 'GET':
-        # Llenamos el formulario con los datos existentes
         form.nombre_completo.data = reporte.nombre_completo
         form.empresa.data = reporte.empresa
         form.puesto.data = reporte.puesto
@@ -843,88 +888,4 @@ def edit_my_report(report_id):
         form.medio_entregable.data = reporte.medio_entregable
         form.incidencias.data = reporte.incidencias
         
-    if request.method == 'POST' and not form.validate_on_submit():
-        print("❌ Errores de validación al editar:", form.errors)
-        
     return render_template('main/edit_my_report.html', title='Corregir Bitácora', form=form, reporte=reporte)
-
-@bp.route('/admin/usuario/<int:user_id>/bitacoras')
-@login_required
-def user_reports_admin(user_id):
-    if current_user.rol != 'admin':
-        abort(403)
-        
-    usuario = User.query.get_or_404(user_id)
-    
-    # Traemos únicamente las bitácoras de este usuario específico
-    reportes = Bitacora.query.filter_by(user_id=user_id).order_by(Bitacora.timestamp.desc()).all()
-
-    # Procesamiento idéntico de periodos que en admin_dashboard
-    for r in reportes:
-        if r.periodo_semanal:
-            dias_lista = [d.strip() for d in r.periodo_semanal.split('|') if d.strip()]
-            r.dias_contados = len(dias_lista)
-            r.fechas_especificas = ", ".join(dias_lista)
-            
-            if len(dias_lista) > 1:
-                r.rango_periodo = f"Semana del {dias_lista[0][:5]} al {dias_lista[-1][:5]}"
-            elif len(dias_lista) == 1:
-                r.rango_periodo = f"Día {dias_lista[0]}"
-            else:
-                r.rango_periodo = "-"
-        else:
-            r.dias_contados = 0
-            r.fechas_especificas = "-"
-            r.rango_periodo = "-"
-
-    return render_template('main/user_reports_admin.html', 
-                           title=f'Bitácoras de {usuario.nombre}', 
-                           usuario=usuario, 
-                           reportes=reportes)
-
-@bp.route('/admin/usuario/<int:user_id>/exportar_pdf')
-@login_required
-def user_reports_pdf(user_id):
-    if current_user.rol != 'admin':
-        abort(403)
-        
-    usuario = User.query.get_or_404(user_id)
-    reportes = Bitacora.query.filter_by(user_id=user_id).order_by(Bitacora.timestamp.desc()).all()
-
-    # Procesar periodos y fechas tal como se muestra en pantalla
-    for r in reportes:
-        if r.periodo_semanal:
-            dias_lista = [d.strip() for d in r.periodo_semanal.split('|') if d.strip()]
-            r.dias_contados = len(dias_lista)
-            r.fechas_especificas = ", ".join(dias_lista)
-            
-            if len(dias_lista) > 1:
-                r.rango_periodo = f"Semana del {dias_lista[0][:5]} al {dias_lista[-1][:5]}"
-            elif len(dias_lista) == 1:
-                r.rango_periodo = f"Día {dias_lista[0]}"
-            else:
-                r.rango_periodo = "-"
-        else:
-            r.dias_contados = 0
-            r.fechas_especificas = "-"
-            r.rango_periodo = "-"
-
-    # Renderizar plantilla diseñada para PDF
-    html = render_template('main/pdf_user_reports.html', 
-                           usuario=usuario, 
-                           reportes=reportes)
-    
-    result = BytesIO()
-    pdf = pisa.CreatePDF(BytesIO(html.encode('utf-8')), dest=result, encoding='utf-8')
-
-    if pdf.err:
-        flash('Hubo un error al generar el PDF.', 'danger')
-        return redirect(url_for('main.user_reports_admin', user_id=user_id))
-
-    response = make_response(result.getvalue())
-    response.headers['Content-Type'] = 'application/pdf'
-    # Genera un nombre de archivo dinámico basado en el nombre del usuario
-    nombre_archivo = f"bitacoras_{usuario.nombre.replace(' ', '_').lower()}.pdf"
-    response.headers['Content-Disposition'] = f'attachment; filename={nombre_archivo}'
-    
-    return response

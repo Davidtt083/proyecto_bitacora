@@ -275,21 +275,64 @@
                 <tbody>
                     {% for reporte in reportes %}
                     <tr>
-                        <td data-sort-value="{{ reporte.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}">
+                        <!-- 1. Periodo del reporte (Usa fecha_iso en formato YYYY-MM-DD para ordenamiento exacto en JS) -->
+                        <td data-sort-value="{{ reporte.fecha_iso }}">
                             <span style="font-weight: bold; color: #0056b3;">{{ reporte.rango_periodo }}</span>
                         </td>
-                        <td data-sort-value="{{ reporte.fechas_especificas }}" style="font-size: 12px; color: #555;">
+
+                        <!-- 2. Fechas específicas (Usa fecha_iso para ordenamiento exacto en JS) -->
+                        <td data-sort-value="{{ reporte.fecha_iso }}" style="font-size: 12px; color: #555;">
                             {{ reporte.fechas_especificas }}
                         </td>
+
+                        <!-- 3. Días laborados -->
                         <td data-sort-value="{{ reporte.dias_contados }}"
                             style="text-align: center; font-weight: bold;">
                             {{ reporte.dias_contados }}
                         </td>
+
+                        <!-- 4. Actividades realizadas -->
                         <td>{{ reporte.actividades }}</td>
+
+                        <!-- 5. Herramientas utilizadas -->
                         <td>{{ reporte.herramientas_utilizadas or '-' }}</td>
-                        <td>{{ reporte.entregable_generado or '-' }}</td>
-                        <td>{{ reporte.medio_entregable or '-' }}</td>
+
+                        <!-- 6. Entregable generado (Formato inteligente con enlace o texto) -->
+                        <td>
+                            <div class="text-truncate-col" title="{{ reporte.entregable_generado or '-' }}">
+                                {% set ent = reporte.entregable_generado or '' %}
+                                {% if ent and (ent.startswith('http://') or ent.startswith('https://') or
+                                ent.startswith('www.')) %}
+                                <a href="{{ ent if ent.startswith('http') else 'http://' ~ ent }}" target="_blank"
+                                    style="color: #0056b3; font-weight: bold; text-decoration: none;">
+                                    🔗 Abrir entregable
+                                </a>
+                                {% else %}
+                                {{ ent or '-' }}
+                                {% endif %}
+                            </div>
+                        </td>
+
+                        <!-- 7. Medio entregable (Formato inteligente con enlace o texto) -->
+                        <td>
+                            <div class="text-truncate-col" title="{{ reporte.medio_entregable or '-' }}">
+                                {% set med = reporte.medio_entregable or '' %}
+                                {% if med and (med.startswith('http://') or med.startswith('https://') or
+                                med.startswith('www.')) %}
+                                <a href="{{ med if med.startswith('http') else 'http://' ~ med }}" target="_blank"
+                                    style="color: #0056b3; font-weight: bold; text-decoration: none;">
+                                    🔗 Ver medio / link
+                                </a>
+                                {% else %}
+                                {{ med or '-' }}
+                                {% endif %}
+                            </div>
+                        </td>
+
+                        <!-- 8. Incidencias -->
                         <td style="color: var(--danger);">{{ reporte.incidencias or 'Ninguna' }}</td>
+
+                        <!-- 9. Acciones (Editar / Borrar fila individual) -->
                         <td style="text-align: center;">
                             <div style="display: flex; flex-direction: column; gap: 6px;">
                                 <a href="{{ url_for('main.edit_report', report_id=reporte.id) }}" class="btn"
