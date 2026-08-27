@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -55,17 +56,17 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
         }
 
         .card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.08);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);
             border-color: #d1d5db;
         }
 
         .icon-box {
-            background: #edf2fa; 
+            background: #edf2fa;
             width: 65px;
             height: 65px;
             border-radius: 16px;
@@ -126,9 +127,23 @@
         }
     </style>
 </head>
+
 <body>
 
+
+
     <div class="header-container">
+        <!-- DISTINTIVO INSTITUCIONAL Y VERSIÓN -->
+        <div
+            style="display: inline-flex; align-items: center; gap: 8px; background: #e2e8f0; padding: 4px 12px; border-radius: 20px; margin-bottom: 15px;">
+            <span
+                style="font-size: 12px; font-weight: 700; color: #334155; text-transform: uppercase; letter-spacing: 0.5px;">Sistema
+                de Bitácoras</span>
+            <span
+                style="background: #0056b3; color: white; padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: bold;">Versión
+                2.0</span>
+        </div>
+
         <h1>Hola {{ current_user.nombre.split()[0] }}, ¿qué deseas hacer hoy?</h1>
         <p>Resumen rápido de tu actividad y accesos directos.</p>
     </div>
@@ -139,7 +154,8 @@
             <div class="icon-box">
                 <!-- Icono de documento -->
                 <svg viewBox="0 0 24 24">
-                    <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+                    <path
+                        d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
                 </svg>
             </div>
             <h3>Crear nueva bitácora</h3>
@@ -151,7 +167,7 @@
             <div class="icon-box gray">
                 <!-- Icono de bitácoras -->
                 <svg viewBox="0 0 24 24">
-                    <path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/>
+                    <path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z" />
                 </svg>
             </div>
             <h3>Ver mis bitácoras</h3>
@@ -162,4 +178,5 @@
     <a href="{{ url_for('auth.logout') }}" class="btn-logout">Cerrar Sesión</a>
 
 </body>
+
 </html>
