@@ -1,5 +1,6 @@
 from io import BytesIO
 from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo 
 import calendar
 from flask import render_template, flash, redirect, url_for, request, abort, make_response
 from xhtml2pdf import pisa
@@ -479,7 +480,7 @@ def user_reports_pdf(user_id):
 
     # Construir fecha y hora exacta de emisión en el encabezado
     meses_es = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
-    hoy = datetime.now()
+    hoy = datetime.now(ZoneInfo("America/Mexico_City"))
     fecha_hoy = f"{hoy.day} de {meses_es[hoy.month-1]} de {hoy.year} a las {hoy.strftime('%H:%M')} hrs"
 
     html = render_template('main/pdf_user_reports.html', 
@@ -624,7 +625,7 @@ def export_pdf():
     total_consultores = len(lista_consultores)
 
     meses_es = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
-    hoy = datetime.now()
+    hoy = datetime.now(ZoneInfo("America/Mexico_City"))
     fecha_hoy = f"{hoy.day} de {meses_es[hoy.month-1]} de {hoy.year} a las {hoy.strftime('%H:%M')} hrs"
 
     hoy_str = hoy.strftime('%d-%m-%Y')
@@ -786,7 +787,7 @@ def export_table_pdf():
 
     # 5. Construir fecha, hora exacta y desglose de criterios para el encabezado ejecutivo
     meses_es = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
-    hoy = datetime.now()
+    hoy = datetime.now(ZoneInfo("America/Mexico_City"))
     fecha_hoy = f"{hoy.day} de {meses_es[hoy.month-1]} de {hoy.year} a las {hoy.strftime('%H:%M')} hrs"
 
     # Determinar si fue por rango, por días específicos o general
