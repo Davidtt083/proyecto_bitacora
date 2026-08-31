@@ -195,6 +195,7 @@ def admin_dashboard():
     if current_user.rol != 'admin':
         return redirect(url_for('main.index'))
     
+    # 1. Obtener parámetros de filtros
     search_query = request.args.get('q', '')
     empresa_filter = request.args.get('empresa', '')
     status_filter = request.args.get('status', '')
@@ -204,64 +205,73 @@ def admin_dashboard():
     fecha_fin = request.args.get('fecha_fin', '')
     fechas_especificas = request.args.get('fechas_especificas', '')
 
-    query = Bitacora.query
-
-    if search_query:
-        query = query.filter(
-            or_(
-                Bitacora.nombre_completo.ilike(f'%{search_query}%'),
-                Bitacora.proyecto_actual.ilike(f'%{search_query}%'),
-                Bitacora.actividades.ilike(f'%{search_query}%'),
-                Bitacora.nombre_jefe_inmediato.ilike(f'%{search_query}%'),
-                Bitacora.cargo_jefe_inmediato.ilike(f'%{search_query}%'),
-                Bitacora.empresa.ilike(f'%{search_query}%')
-            )
-        )
-    if empresa_filter:
-        query = query.filter(Bitacora.empresa == empresa_filter)
-    if status_filter:
-        query = query.filter(Bitacora.status == status_filter)
-
-    reportes_base = query.order_by(Bitacora.timestamp.desc()).all()
-    reportes = filtrar_reportes_por_fecha(reportes_base, tipo_filtro, fecha_inicio, fecha_fin, fechas_especificas)
-    
+    # Lista de empresas siempre disponible para el selector
     empresas = [e[0] for e in db.session.query(User.empresa).distinct().all() if e[0]]
 
-    for r in reportes:
-        if r.periodo_semanal:
-            dias_lista = [d.strip() for d in r.periodo_semanal.split('|') if d.strip()]
-            try:
-                fechas_obj = sorted([datetime.strptime(d, '%d/%m/%Y').date() for d in dias_lista])
-                dias_lista = [f.strftime('%d/%m/%Y') for f in fechas_obj]
-                r.fecha_iso = fechas_obj[0].strftime('%Y-%m-%d')
-            except ValueError:
+    # 2. Verificar si el usuario aplicó al menos un filtro
+    hay_filtros = bool(search_query or empresa_filter or status_filter or fecha_inicio or fecha_fin or fechas_especificas)
+
+    if hay_filtros:
+        query = Bitacora.query
+
+        if search_query:
+            query = query.filter(
+                or_(
+                    Bitacora.nombre_completo.ilike(f'%{search_query}%'),
+                    Bitacora.proyecto_actual.ilike(f'%{search_query}%'),
+                    Bitacora.actividades.ilike(f'%{search_query}%'),
+                    Bitacora.nombre_jefe_inmediato.ilike(f'%{search_query}%'),
+                    Bitacora.cargo_jefe_inmediato.ilike(f'%{search_query}%'),
+                    Bitacora.empresa.ilike(f'%{search_query}%')
+                )
+            )
+        if empresa_filter:
+            query = query.filter(Bitacora.empresa == empresa_filter)
+        if status_filter:
+            query = query.filter(Bitacora.status == status_filter)
+
+        reportes_base = query.order_by(Bitacora.timestamp.desc()).all()
+        reportes = filtrar_reportes_por_fecha(reportes_base, tipo_filtro, fecha_inicio, fecha_fin, fechas_especificas)
+
+        # Formatear datos individuales para cada fila de la bitácora
+        for r in reportes:
+            if r.periodo_semanal:
+                dias_lista = [d.strip() for d in r.periodo_semanal.split('|') if d.strip()]
+                try:
+                    fechas_obj = sorted([datetime.strptime(d, '%d/%m/%Y').date() for d in dias_lista])
+                    dias_lista = [f.strftime('%d/%m/%Y') for f in fechas_obj]
+                    r.fecha_iso = fechas_obj[0].strftime('%Y-%m-%d')
+                except ValueError:
+                    r.fecha_iso = "0000-00-00"
+
+                r.dias_contados = len(dias_lista)
+                r.fechas_especificas = ", ".join(dias_lista)
+                
+                if len(dias_lista) > 1:
+                    r.rango_periodo = f"{dias_lista[0]} - {dias_lista[-1]}"
+                elif len(dias_lista) == 1:
+                    r.rango_periodo = dias_lista[0]
+                else:
+                    r.rango_periodo = "-"
+            else:
+                r.dias_contados = 0
+                r.fechas_especificas = "-"
+                r.rango_periodo = "-"
                 r.fecha_iso = "0000-00-00"
 
-            r.dias_contados = len(dias_lista)
-            r.fechas_especificas = ", ".join(dias_lista)
-            
-            if len(dias_lista) > 1:
-                r.rango_periodo = f"{dias_lista[0]} - {dias_lista[-1]}"
-            elif len(dias_lista) == 1:
-                r.rango_periodo = dias_lista[0]
-            else:
-                r.rango_periodo = "-"
-        else:
-            r.dias_contados = 0
-            r.fechas_especificas = "-"
-            r.rango_periodo = "-"
-            r.fecha_iso = "0000-00-00"
+        def obtener_fecha_sort(rep):
+            if not rep.periodo_semanal:
+                return datetime.min.date()
+            try:
+                f_str = [d.strip() for d in rep.periodo_semanal.split('|') if d.strip()][0]
+                return datetime.strptime(f_str, '%d/%m/%Y').date()
+            except (ValueError, IndexError):
+                return datetime.min.date()
 
-    def obtener_fecha_sort(rep):
-        if not rep.periodo_semanal:
-            return datetime.min.date()
-        try:
-            f_str = [d.strip() for d in rep.periodo_semanal.split('|') if d.strip()][0]
-            return datetime.strptime(f_str, '%d/%m/%Y').date()
-        except (ValueError, IndexError):
-            return datetime.min.date()
-
-    reportes = sorted(reportes, key=obtener_fecha_sort, reverse=False)
+        reportes = sorted(reportes, key=obtener_fecha_sort, reverse=False)
+    else:
+        # Si entra por primera vez sin filtros, la lista inicia vacía
+        reportes = []
 
     return render_template('main/admin_dashboard.html', 
                            title='Panel Admin', 
