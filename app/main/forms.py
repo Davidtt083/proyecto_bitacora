@@ -5,8 +5,9 @@ from wtforms.validators import DataRequired, Email, Optional, URL, Length, Equal
 class BitacoraForm(FlaskForm):
     nombre_completo = StringField('Nombre completo', validators=[DataRequired(), Length(max=100)])
     empresa = SelectField('Empresa cliente', choices=[ 
-         ('Hyphametrics', 'Hyphametrics'),
+        ('Hyphametrics', 'Hyphametrics'),
         ('Qualis', 'Qualis'),
+        ('Grupo Fórmula', 'Grupo Fórmula'),
         ('Empresa C', 'Empresa C'),
         ('Empresa D', 'Empresa D'),
         ('Independiente', 'Trabajador independiente')
@@ -45,6 +46,7 @@ class EditUserAdminForm(FlaskForm):
     empresa = SelectField('Empresa', choices=[ 
         ('Hyphametrics', 'Hyphametrics'),
         ('Qualis', 'Qualis'),
+        ('Grupo Fórmula', 'Grupo Fórmula'),
         ('Empresa C', 'Empresa C'),
         ('Empresa D', 'Empresa D'),
         ('Independiente', 'Trabajador Independiente')
@@ -78,6 +80,7 @@ class EditReportAdminForm(FlaskForm):
     empresa = SelectField('Empresa cliente', choices=[ 
         ('Hyphametrics', 'Hyphametrics'),
         ('Qualis', 'Qualis'),
+        ('Grupo Fórmula', 'Grupo Fórmula'),
         ('Empresa C', 'Empresa C'),
         ('Empresa D', 'Empresa D'),
         ('Independiente', 'Trabajador independiente')

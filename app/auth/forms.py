@@ -23,6 +23,7 @@ class RegistrationForm(FlaskForm):
         ('', '--- Seleccione una empresa ---'),
         ('Hyphametrics', 'Hyphametrics'),
         ('Qualis', 'Qualis'),
+        ('Grupo Fórmula', 'Grupo Fórmula'),
         ('Empresa C', 'Empresa C'),
         ('Empresa D', 'Empresa D'),
         ('Independiente', 'Trabajador independiente')

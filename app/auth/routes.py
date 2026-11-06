@@ -7,8 +7,6 @@ from app.models import User
 
 @bp.route('/register', methods=['GET', 'POST'])
 def register():
-   # if current_user.is_authenticated:
-     #   return redirect(url_for('main.index'))
     form = RegistrationForm()
     if form.validate_on_submit():
         user = User(
@@ -26,8 +24,14 @@ def register():
         user.set_password(form.password.data)
         db.session.add(user)
         db.session.commit()
-        flash('¡Registro exitoso! Ahora puedes iniciar sesión.')
+        flash('¡Usuario registrado exitosamente!', 'success')
         return redirect(url_for('main.users_list'))
+        
+    # Si se envió el formulario pero falló la validación
+    if request.method == 'POST' and not form.validate_on_submit():
+        print("❌ Errores en el registro de usuario:", form.errors)
+        flash('Por favor revisa los campos marcados en rojo. Hay información faltante o incorrecta.', 'danger')
+
     return render_template('auth/register.html', title='Registro', form=form)
 
 @bp.route('/login', methods=['GET', 'POST'])
