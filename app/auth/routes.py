@@ -24,8 +24,10 @@ def register():
         user.set_password(form.password.data)
         db.session.add(user)
         db.session.commit()
-        flash('¡Usuario registrado exitosamente!', 'success')
-        return redirect(url_for('main.users_list'))
+        
+        # Enviamos el mensaje exacto con la categoría 'registrado' y permanecemos en la pantalla
+        flash('¡Registro exitoso! Ahora puedes iniciar sesión.', 'registrado')
+        return render_template('auth/register.html', title='Registro', form=form)
         
     # Si se envió el formulario pero falló la validación
     if request.method == 'POST' and not form.validate_on_submit():

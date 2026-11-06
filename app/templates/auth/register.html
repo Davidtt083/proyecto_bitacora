@@ -134,15 +134,18 @@
         <a href="{{ url_for('main.users_list') }}" class="btn btn-back">← Volver a lista de usuarios</a>
         <h1>Registro de usuario</h1>
 
-        <!-- AVISOS GENERALES DE ERROR O VALIDACIÓN -->
+        <!-- AVISOS GENERALES DE ERROR (Solo se muestran si la categoría es 'danger') -->
         {% with messages = get_flashed_messages(with_categories=true) %}
-          {% if messages %}
-            {% for category, message in messages %}
-              <div style="background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: 12px; border-radius: 8px; margin-bottom: 20px; text-align: center; font-size: 14px; font-weight: bold;">
-                {{ message }}
-              </div>
-            {% endfor %}
-          {% endif %}
+        {% if messages %}
+        {% for category, message in messages %}
+        {% if category == 'danger' %}
+        <div
+            style="background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: 12px; border-radius: 8px; margin-bottom: 20px; text-align: center; font-size: 14px; font-weight: bold;">
+            {{ message }}
+        </div>
+        {% endif %}
+        {% endfor %}
+        {% endif %}
         {% endwith %}
 
         <form method="POST">
@@ -151,69 +154,71 @@
             <div class="registration-form">
                 <!-- Fila 1 -->
                 <div class="form-group">
-                    {{ form.nombre.label }} 
+                    {{ form.nombre.label }}
                     {{ form.nombre() }}
                     {% for error in form.nombre.errors %}<span class="error-text">{{ error }}</span>{% endfor %}
                 </div>
                 <div class="form-group">
-                    {{ form.email.label }} 
+                    {{ form.email.label }}
                     {{ form.email(placeholder="ejemplo@correo.com") }}
                     {% for error in form.email.errors %}<span class="error-text">{{ error }}</span>{% endfor %}
                 </div>
                 <div class="form-group">
-                    {{ form.telefono.label }} 
+                    {{ form.telefono.label }}
                     {{ form.telefono() }}
                     {% for error in form.telefono.errors %}<span class="error-text">{{ error }}</span>{% endfor %}
                 </div>
 
                 <!-- Fila 2 -->
                 <div class="form-group">
-                    {{ form.puesto.label }} 
+                    {{ form.puesto.label }}
                     {{ form.puesto() }}
                     {% for error in form.puesto.errors %}<span class="error-text">{{ error }}</span>{% endfor %}
                 </div>
                 <div class="form-group">
-                    {{ form.jefe_directo.label }} 
+                    {{ form.jefe_directo.label }}
                     {{ form.jefe_directo() }}
                     {% for error in form.jefe_directo.errors %}<span class="error-text">{{ error }}</span>{% endfor %}
                 </div>
                 <div class="form-group">
-                    {{ form.cargo_jefe.label }} 
+                    {{ form.cargo_jefe.label }}
                     {{ form.cargo_jefe() }}
                     {% for error in form.cargo_jefe.errors %}<span class="error-text">{{ error }}</span>{% endfor %}
                 </div>
 
                 <!-- Fila 3 -->
                 <div class="form-group">
-                    {{ form.proyecto_actual.label }} 
+                    {{ form.proyecto_actual.label }}
                     {{ form.proyecto_actual() }}
-                    {% for error in form.proyecto_actual.errors %}<span class="error-text">{{ error }}</span>{% endfor %}
+                    {% for error in form.proyecto_actual.errors %}<span class="error-text">{{ error }}</span>{% endfor
+                    %}
                 </div>
                 <div class="form-group">
-                    {{ form.password.label }} 
+                    {{ form.password.label }}
                     {{ form.password() }}
                     {% for error in form.password.errors %}<span class="error-text">{{ error }}</span>{% endfor %}
                 </div>
                 <div class="form-group">
-                    {{ form.password_confirm.label }} 
+                    {{ form.password_confirm.label }}
                     {{ form.password_confirm() }}
-                    {% for error in form.password_confirm.errors %}<span class="error-text">{{ error }}</span>{% endfor %}
+                    {% for error in form.password_confirm.errors %}<span class="error-text">{{ error }}</span>{% endfor
+                    %}
                 </div>
 
                 <!-- Fila 4 -->
                 <div class="form-group">
-                    {{ form.empresa.label }} 
+                    {{ form.empresa.label }}
                     {{ form.empresa() }}
                     {% for error in form.empresa.errors %}<span class="error-text">{{ error }}</span>{% endfor %}
                 </div>
                 <div class="form-group">
-                    {{ form.empresa_origen.label }} 
+                    {{ form.empresa_origen.label }}
                     {{ form.empresa_origen() }}
                     {% for error in form.empresa_origen.errors %}<span class="error-text">{{ error }}</span>{% endfor %}
                 </div>
                 <!-- CAMPO QUE FALTABA: ESTADO DEL USUARIO -->
                 <div class="form-group">
-                    {{ form.status.label }} 
+                    {{ form.status.label }}
                     {{ form.status() }}
                     {% for error in form.status.errors %}<span class="error-text">{{ error }}</span>{% endfor %}
                 </div>
@@ -225,6 +230,36 @@
             </div>
         </form>
     </div>
+
+    <!-- LIBRERÍA SWEETALERT2 PARA LA NOTIFICACIÓN TOAST -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            {% for category, message in messages %}
+            {% if category == 'registrado' %}
+            // Notificación Toast idéntica a la del manual
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: 'Notificación',
+                text: '{{ message }}',
+                showConfirmButton: false,
+                timer: 2500,
+                timerProgressBar: true
+            }).then(() => {
+                // Redirección automática tras mostrar la notificación
+                window.location.href = "{{ url_for('main.users_list') }}";
+            });
+            {% endif %}
+            {% endfor %}
+        });
+    </script>
+    {% endif %}
+    {% endwith %}
 </body>
 
-</html>
+</html>s
